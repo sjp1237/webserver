@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-7/root/usr/bin/c++    -Wall -g    CMakeFiles/test.dir/test.cc.o CMakeFiles/test.dir/httpconn.cc.o CMakeFiles/test.dir/tool.cc.o  -o test -rdynamic 
