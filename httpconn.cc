@@ -363,16 +363,17 @@ int httpconn::do_request()
         m_response->response_body+=BLANK;
   }
 
-
+//测试成功
+//测试用例：abcdef abcdef\r\n abcdef\r
 httpconn::LINE_STATUS httpconn::parse_line(){
   //从缓冲区中读取一行数据
   //遇到\n\r就停止
   //xxxxxx\r\nxxxxxx\r\n
   //m_check_idx检查缓冲区的位置
   //m_read_idx读取缓冲区的位置
-  for( ;m_check_idx<m_read_idx;m_check_idx++){
+  for( ;m_check_idx<read_buffer.size();m_check_idx++){
       if(read_buffer[m_check_idx]=='\r'){
-        if(m_check_idx+1>=m_read_idx){
+        if(m_check_idx+1>=read_buffer.size()){
           return LINE_OPEN;
         }
         else if(read_buffer[m_check_idx+1]=='\n'){

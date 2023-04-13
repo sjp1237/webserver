@@ -163,12 +163,14 @@ class httpconn{
     HTTP_CODE  AnalyFile();
     void init();
   public:
+  
     Request* m_request;
     Response* m_response;
   private:
-    std::string read_buffer;
+    
     void BuildReponseLine();
     void BuildResponseHeaer();
+    std::string read_buffer;
     std::string write_buffer;
     size_t m_read_idx;//保存read_buffer指向的位置
     size_t m_read_start;//保存read_buffer的起始位置
