@@ -158,12 +158,13 @@ class httpconn{
     bool CgiHandle();
   private:
     //将url中的路径和参数给分离开来
-    bool AnalyUri();
+    
     //分析文件
-    HTTP_CODE  AnalyFile();
+   
     void init();
   public:
-  
+    bool AnalyUri();
+    void  AnalyFile();
     Request* m_request;
     Response* m_response;
   private:

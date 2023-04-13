@@ -29,17 +29,34 @@ using namespace std;
 // }
 
 
-void test_parse_request_header()
-{
-   httpconn* tmp=new httpconn();
-   string text="Content-Length: 18";
-   tmp->parse_request_header(text);
+// void test_parse_request_header()
+// {
+//    httpconn* tmp=new httpconn();
+//  //  string text="Content-Length: 18";
+//    string text1="Connection: keep-alive";
+//   // string text2="Host: 8081";
 
+//   //tmp->parse_request_header(text);
+//    tmp->parse_request_header(text1);
+//   // tmp->parse_request_header(text2);
+// }
+
+void test_analy_url()
+{
+    httpconn* tmp=new httpconn();
+    std::string s="get /main?a=100:b=200 http1.1";
+    tmp->parse_request_line(s);
+    //AnalyUri测试成功
+    //AnalyFile测试成功
+   // tmp->AnalyUri();
+  //  tmp->AnalyFile();
+    tmp->do_request();
 }
 int main()
 {
   //test_parse_line();
-  test_parse_request_header();
+  //test_parse_request_header();
+  test_analy_url();
   return 0;
 }
 

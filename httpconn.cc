@@ -23,7 +23,7 @@ void add(int epoll_fd,int sockfd,int shot)
   epoll_ctl(epoll_fd, EPOLL_CTL_ADD,sockfd,&event);  
 }
 
-  httpconn::HTTP_CODE  httpconn::AnalyFile(){
+  void  httpconn::AnalyFile(){
         std::string path=m_request->m_path;
         m_request->m_path="wwwroot";
         m_request->m_path+=path;
@@ -44,6 +44,7 @@ void add(int epoll_fd,int sockfd,int shot)
           else if(buf.st_mode&S_IXUSR||buf.st_mode&S_IXGRP||buf.st_mode&S_IXOTH){
             //可执行文件
             cgi=true;
+            return ;
           }
           else{
             //普通文件
@@ -57,7 +58,7 @@ void add(int epoll_fd,int sockfd,int shot)
           m_request->m_path=NOT_FOUND_PAGE;
           m_response->suffix="html";
           IsSendPage=true;
-          return NO_RESOURCE;
+          return ;
         }
         //文件大小,也就是响应的正文的大小
         m_response->content_size=buf.st_size;
@@ -316,10 +317,10 @@ int httpconn::do_request()
   //判断一个文件是否一个普通文件，则将该文件提前打开，并返回相关文件的fd
   AnalyFile();
   if(cgi)
-   {
+  {
     //处理cgi文件
      CgiHandle();
-   }
+  }
 }
 
   void httpconn::BuildReponseLine(){
@@ -415,12 +416,14 @@ httpconn::HTTP_CODE  httpconn::parse_request_line(std::string text){
 
     //解析出url
     int pos1=text.find(' ',pos+1);
-    m_request->m_url=text.substr(pos+1,pos1-pos);
+    m_request->m_url=text.substr(pos+1,pos1-pos-1);
     m_request->m_version=text.substr(pos1+1);
+    auto& url= m_request->m_url;  
     m_check_state=CHECK_STATE_HEADER;
  }
 
 //解析请求报头
+//测试成功
  httpconn::HTTP_CODE httpconn::parse_request_header(std::string text){
      if(text[0]=='\0'){
       //遇到空行
@@ -433,18 +436,21 @@ httpconn::HTTP_CODE  httpconn::parse_request_line(std::string text){
      }
 
      //查找": ”
-     int pos=text.find(": ");
+     int pos=text.find(":");
      if(pos==std::string::npos){
        return NO_REQUEST;
      }
 
      if(text.substr(0,pos)=="Content-Length"){
-        m_request->m_content_len=atoi((const char*)text[pos+2]);
+       const char* tmp=(const char*)(&text[pos+2]);
+       int comtent_len=atoi(tmp);
+        m_request->m_content_len=comtent_len;
         return NO_REQUEST;
      }
 
      if(text.substr(0,pos)=="Connection"){
-        if(strcmp((const char*)text[pos+2],"keep-alive")){
+        string tmp=text.substr(pos+2);
+        if(strcmp(tmp.c_str(),"keep-alive")==0){
             m_linger=true;
             return NO_REQUEST;
         }
