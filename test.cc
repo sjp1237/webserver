@@ -43,20 +43,29 @@ using namespace std;
 
 void test_analy_url()
 {
-    httpconn* tmp=new httpconn();
-    std::string s="get /main?a=100:b=200 http1.1";
-    tmp->parse_request_line(s);
+    // httpconn* tmp=new httpconn();
+    // tmp->read_buffer="post /main http1.1\n\rContent-Length: 18\r\nConnection: keep-alive\r\n\r\na=19b=20";
+    //tmp->parse_request_line(s);
     //AnalyUri测试成功
     //AnalyFile测试成功
    // tmp->AnalyUri();
   //  tmp->AnalyFile();
-    tmp->do_request();
+   // tmp->do_request();
+}
+
+void test_parse_read()
+{
+    httpconn* tmp=new httpconn();
+    tmp->read_buffer="post /main http1.1\n\rContent-Length: 8\n\rConnection: keep-alive\n\r\n\ra=19b=20";
+    cout<<tmp->read_buffer.size();
+    tmp->process_read();
 }
 int main()
 {
   //test_parse_line();
   //test_parse_request_header();
-  test_analy_url();
+  //test_analy_url();
+  test_parse_read();
   return 0;
 }
 

@@ -73,7 +73,7 @@ void add(int epoll_fd,int sockfd,int shot)
         }
     }
        
-
+//直接将数据读取上来的方式不好，会发生tcp黏包
 int httpconn::Read(){
   //缓冲区满了
   if(m_read_idx>=READ_BUFFER_SIZE){
@@ -135,7 +135,7 @@ httpconn::HTTP_CODE httpconn::process_read(){
   LINE_STATUS line_state=LINE_OK;
   const char * text=nullptr;
   //从读缓冲区读取一行
-  while(parse_line()==LINE_OK){
+  while(m_check_state==CHECK_STATE_CONTENT||parse_line()==LINE_OK){
     //获取一行的起始位置
     text=read_line();
     //获取检查的起始位置
@@ -245,9 +245,7 @@ httpconn::HTTP_CODE httpconn::process_read(){
                 break;
               }
             }
-
           }
-
 
           //父进程读取子进程的处理结果
           while(true){
@@ -368,16 +366,16 @@ int httpconn::do_request()
 //测试用例：abcdef abcdef\r\n abcdef\r
 httpconn::LINE_STATUS httpconn::parse_line(){
   //从缓冲区中读取一行数据
-  //遇到\n\r就停止
-  //xxxxxx\r\nxxxxxx\r\n
+  //遇到\r\n就停止
+  //xxxxxx\n\rxxxxxx\n\r
   //m_check_idx检查缓冲区的位置
   //m_read_idx读取缓冲区的位置
   for( ;m_check_idx<read_buffer.size();m_check_idx++){
-      if(read_buffer[m_check_idx]=='\r'){
+      if(read_buffer[m_check_idx]=='\n'){
         if(m_check_idx+1>=read_buffer.size()){
           return LINE_OPEN;
         }
-        else if(read_buffer[m_check_idx+1]=='\n'){
+        else if(read_buffer[m_check_idx+1]=='\r'){
              //完整行
               read_buffer[m_check_idx++]='\0';
               read_buffer[m_check_idx++]='\0';
@@ -387,7 +385,7 @@ httpconn::LINE_STATUS httpconn::parse_line(){
           return LINE_BAD;
         }
       }
-      else if(m_check_idx>0&&read_buffer[m_check_idx+1]=='\n'){
+      else if(m_check_idx>0&&read_buffer[m_check_idx+1]=='\r'){
            read_buffer[m_check_idx-1]='\0';
            read_buffer[m_check_idx++]='\0';
            return LINE_OK;
@@ -467,13 +465,16 @@ httpconn::HTTP_CODE httpconn::parse_request_content()
 {
     //读取请求正文
     //通过content-Length去判断是否读取完毕
-
+    //请求中的正文read_buffer.size()-m_check_idx
+    if(read_buffer.size()-m_check_idx<m_request->m_content_len){
+      return NO_REQUEST;
+    }else{
+      m_request->content=read_buffer.substr(m_check_idx,m_request->m_content_len);
+      return GET_REQUEST;
+    }
 }
 
 //生成请求报头
-
-
-
 bool httpconn::Write()
 {
   //先发送response_body后，
