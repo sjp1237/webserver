@@ -71,19 +71,15 @@ class sem{
       throw std::exception();
     }
   }
-
   //对信号量加锁，调用一次对信号量的值-1，如果值为0，就阻塞
   bool wait(){
     return sem_wait(&m_sem)==0;
   }
-
   //增加信号量
   bool post(){
     return sem_post(&m_sem)==0;
   }
-  
   private:
   sem_t m_sem;
-
 };
 #endif

@@ -23,7 +23,7 @@ void add(int epoll_fd,int sockfd,int shot)
   epoll_ctl(epoll_fd, EPOLL_CTL_ADD,sockfd,&event);  
 }
 
-  httpconn::HTTP_CODE  httpconn::AnalyFile(){
+  void  httpconn::AnalyFile(){
         std::string path=m_request->m_path;
         m_request->m_path="wwwroot";
         m_request->m_path+=path;
@@ -44,6 +44,7 @@ void add(int epoll_fd,int sockfd,int shot)
           else if(buf.st_mode&S_IXUSR||buf.st_mode&S_IXGRP||buf.st_mode&S_IXOTH){
             //可执行文件
             cgi=true;
+            return ;
           }
           else{
             //普通文件
@@ -57,7 +58,7 @@ void add(int epoll_fd,int sockfd,int shot)
           m_request->m_path=NOT_FOUND_PAGE;
           m_response->suffix="html";
           IsSendPage=true;
-          return NO_RESOURCE;
+          return ;
         }
         //文件大小,也就是响应的正文的大小
         m_response->content_size=buf.st_size;
@@ -72,7 +73,7 @@ void add(int epoll_fd,int sockfd,int shot)
         }
     }
        
-
+//直接将数据读取上来的方式不好，会发生tcp黏包
 int httpconn::Read(){
   //缓冲区满了
   if(m_read_idx>=READ_BUFFER_SIZE){
@@ -134,7 +135,7 @@ httpconn::HTTP_CODE httpconn::process_read(){
   LINE_STATUS line_state=LINE_OK;
   const char * text=nullptr;
   //从读缓冲区读取一行
-  while(parse_line()==LINE_OK){
+  while(m_check_state==CHECK_STATE_CONTENT||parse_line()==LINE_OK){
     //获取一行的起始位置
     text=read_line();
     //获取检查的起始位置
@@ -244,9 +245,7 @@ httpconn::HTTP_CODE httpconn::process_read(){
                 break;
               }
             }
-
           }
-
 
           //父进程读取子进程的处理结果
           while(true){
@@ -316,10 +315,10 @@ int httpconn::do_request()
   //判断一个文件是否一个普通文件，则将该文件提前打开，并返回相关文件的fd
   AnalyFile();
   if(cgi)
-   {
+  {
     //处理cgi文件
      CgiHandle();
-   }
+  }
 }
 
   void httpconn::BuildReponseLine(){
@@ -363,19 +362,20 @@ int httpconn::do_request()
         m_response->response_body+=BLANK;
   }
 
-
+//测试成功
+//测试用例：abcdef abcdef\r\n abcdef\r
 httpconn::LINE_STATUS httpconn::parse_line(){
   //从缓冲区中读取一行数据
-  //遇到\n\r就停止
-  //xxxxxx\r\nxxxxxx\r\n
+  //遇到\r\n就停止
+  //xxxxxx\n\rxxxxxx\n\r
   //m_check_idx检查缓冲区的位置
   //m_read_idx读取缓冲区的位置
-  for( ;m_check_idx<m_read_idx;m_check_idx++){
-      if(read_buffer[m_check_idx]=='\r'){
-        if(m_check_idx+1>=m_read_idx){
+  for( ;m_check_idx<read_buffer.size();m_check_idx++){
+      if(read_buffer[m_check_idx]=='\n'){
+        if(m_check_idx+1>=read_buffer.size()){
           return LINE_OPEN;
         }
-        else if(read_buffer[m_check_idx+1]=='\n'){
+        else if(read_buffer[m_check_idx+1]=='\r'){
              //完整行
               read_buffer[m_check_idx++]='\0';
               read_buffer[m_check_idx++]='\0';
@@ -385,7 +385,7 @@ httpconn::LINE_STATUS httpconn::parse_line(){
           return LINE_BAD;
         }
       }
-      else if(m_check_idx>0&&read_buffer[m_check_idx+1]=='\n'){
+      else if(m_check_idx>0&&read_buffer[m_check_idx+1]=='\r'){
            read_buffer[m_check_idx-1]='\0';
            read_buffer[m_check_idx++]='\0';
            return LINE_OK;
@@ -414,12 +414,14 @@ httpconn::HTTP_CODE  httpconn::parse_request_line(std::string text){
 
     //解析出url
     int pos1=text.find(' ',pos+1);
-    m_request->m_url=text.substr(pos+1,pos1-pos);
+    m_request->m_url=text.substr(pos+1,pos1-pos-1);
     m_request->m_version=text.substr(pos1+1);
+    auto& url= m_request->m_url;  
     m_check_state=CHECK_STATE_HEADER;
  }
 
 //解析请求报头
+//测试成功
  httpconn::HTTP_CODE httpconn::parse_request_header(std::string text){
      if(text[0]=='\0'){
       //遇到空行
@@ -432,18 +434,21 @@ httpconn::HTTP_CODE  httpconn::parse_request_line(std::string text){
      }
 
      //查找": ”
-     int pos=text.find(": ");
+     int pos=text.find(":");
      if(pos==std::string::npos){
        return NO_REQUEST;
      }
 
      if(text.substr(0,pos)=="Content-Length"){
-        m_request->m_content_len=atoi((const char*)text[pos+2]);
+       const char* tmp=(const char*)(&text[pos+2]);
+       int comtent_len=atoi(tmp);
+        m_request->m_content_len=comtent_len;
         return NO_REQUEST;
      }
 
      if(text.substr(0,pos)=="Connection"){
-        if(strcmp((const char*)text[pos+2],"keep-alive")){
+        string tmp=text.substr(pos+2);
+        if(strcmp(tmp.c_str(),"keep-alive")==0){
             m_linger=true;
             return NO_REQUEST;
         }
@@ -460,13 +465,16 @@ httpconn::HTTP_CODE httpconn::parse_request_content()
 {
     //读取请求正文
     //通过content-Length去判断是否读取完毕
-
+    //请求中的正文read_buffer.size()-m_check_idx
+    if(read_buffer.size()-m_check_idx<m_request->m_content_len){
+      return NO_REQUEST;
+    }else{
+      m_request->content=read_buffer.substr(m_check_idx,m_request->m_content_len);
+      return GET_REQUEST;
+    }
 }
 
 //生成请求报头
-
-
-
 bool httpconn::Write()
 {
   //先发送response_body后，

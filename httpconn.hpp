@@ -43,8 +43,10 @@ static std::unordered_map<std::string,std::string> suffix_type{{"html","text/htm
       m_host.clear();
       m_content_len=0;
       content.clear();
-      request_header.clear();
-      header_map.clear();
+    //  request_header.clear();
+     // header_map.clear();
+
+      m_content_pos=0;
     }
       std::string m_request_line;
       METHOD m_method;        //请求方法
@@ -54,10 +56,11 @@ static std::unordered_map<std::string,std::string> suffix_type{{"html","text/htm
       std::string m_parameter;//参数
       std::string m_host;   //主机名
       int m_content_len;   //请求正文的大小
+      int m_content_pos; //读取请求正文的下标
       std::string content; //请求正文
-      std::vector<std::string> request_header;
+     // std::vector<std::string> request_header;
       //存储响应报头
-      std::unordered_map<std::string,std::string> header_map;              
+    //  std::unordered_map<std::string,std::string> header_map;              
   };
 
  class Response{    
@@ -129,7 +132,7 @@ class httpconn{
         LINE_OPEN     //读取的行不完整
     };
     
-    HTTP_CODE parse_request_line(std::string text); 
+    
   public:
     //从读缓冲区中读取一行数据
     LINE_STATUS parse_line();
@@ -153,22 +156,30 @@ class httpconn{
     HTTP_CODE parse_request_header(std::string text);
     //解析请求正文
     HTTP_CODE parse_request_content();
-    //解解析文件
+    //解析文件
+    //do_request中的cgihandle没有测试完成，其余的测试好了
     int  do_request();
     bool CgiHandle();
   private:
     //将url中的路径和参数给分离开来
-    bool AnalyUri();
     //分析文件
-    HTTP_CODE  AnalyFile();
     void init();
+
+    private:
+    //测试成功的接口
+    bool AnalyUri();
+    void  AnalyFile();
+    HTTP_CODE parse_request_line(std::string text); 
   public:
+
     Request* m_request;
     Response* m_response;
-  private:
     std::string read_buffer;
+  private:
+    
     void BuildReponseLine();
     void BuildResponseHeaer();
+    
     std::string write_buffer;
     size_t m_read_idx;//保存read_buffer指向的位置
     size_t m_read_start;//保存read_buffer的起始位置
@@ -186,5 +197,9 @@ class httpconn{
     bool cgi=false;
     int epoll_fd;
 };
+<<<<<<< HEAD
 
 //master
+=======
+//测试
+>>>>>>> sjp
