@@ -6,24 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/home/sjp/webserver/httpconn.cc
-httpconn.hpp
-/home/sjp/webserver/httpconn.hpp
-sys/types.h
--
-sys/socket.h
--
-iostream
--
-string.h
--
-sys/socket.h
--
-sys/stat.h
--
-tool.hpp
-/home/sjp/webserver/tool.hpp
-
 /home/sjp/webserver/httpconn.hpp
 unordered_map
 -
@@ -54,13 +36,9 @@ lst_timer.h
 iostream
 -
 
-/home/sjp/webserver/tool.hpp
-iostream
--
-string
--
-sys/types.h
--
-sys/socket.h
--
+/home/sjp/webserver/test.cc
+httpconn.hpp
+/home/sjp/webserver/httpconn.hpp
+lst_timer.h
+/home/sjp/webserver/lst_timer.h
 
