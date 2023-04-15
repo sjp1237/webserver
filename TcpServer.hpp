@@ -60,7 +60,7 @@ class TcpServer
       Bind();
       Listen();
       LOG("INFO","Tcp InitServer success");
-//     LOG(INFO,"InitServer Success..");
+//    LOG(INFO,"InitServer Success..");
     }
 
    void Socket()
@@ -101,6 +101,7 @@ class TcpServer
      }
      LOG(INFO,"Listen success");
    }
+
    ~TcpServer()
    {}
 };
