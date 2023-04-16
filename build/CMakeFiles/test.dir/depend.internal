@@ -7,6 +7,8 @@ CMakeFiles/test.dir/httpconn.cc.o
  /home/sjp/webserver/lst_timer.h
  /home/sjp/webserver/tool.hpp
 CMakeFiles/test.dir/test.cc.o
+ /home/sjp/webserver/Log.hpp
+ /home/sjp/webserver/TcpServer.hpp
  /home/sjp/webserver/httpconn.hpp
  /home/sjp/webserver/lst_timer.h
  /home/sjp/webserver/test.cc

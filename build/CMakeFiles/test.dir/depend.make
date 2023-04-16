@@ -6,6 +6,8 @@ CMakeFiles/test.dir/httpconn.cc.o: ../httpconn.hpp
 CMakeFiles/test.dir/httpconn.cc.o: ../lst_timer.h
 CMakeFiles/test.dir/httpconn.cc.o: ../tool.hpp
 
+CMakeFiles/test.dir/test.cc.o: ../Log.hpp
+CMakeFiles/test.dir/test.cc.o: ../TcpServer.hpp
 CMakeFiles/test.dir/test.cc.o: ../httpconn.hpp
 CMakeFiles/test.dir/test.cc.o: ../lst_timer.h
 CMakeFiles/test.dir/test.cc.o: ../test.cc

@@ -144,16 +144,20 @@ class sort_timer_list{
         //删除头节点
         util_timer* next_timer=head->next;
         delete timer;
-        timer=nullptr;
+
         head=next_timer;
+        head->pre=nullptr;
+        return;
       }
 
 
       if(timer==tail){
         util_timer* pre_timer=tail->pre;
+        pre_timer->next=nullptr;
         delete timer;
-        timer=nullptr;
         tail=pre_timer;
+        tail->next=nullptr;
+        return;
       }
       util_timer* next_timer=timer->next;
       util_timer* pre_timer=timer->pre;

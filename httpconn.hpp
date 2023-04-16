@@ -186,7 +186,6 @@ class httpconn{
     HTTP_CODE parse_request_line(std::string text); 
     HTTP_CODE process_read();
   public:
-
     Request* m_request;
     Response* m_response;
     std::string read_buffer;
@@ -203,7 +202,6 @@ class httpconn{
     size_t m_start_content;
     int socket;
     bool m_linger=false;
-
     int file_size=0;//发送静态网页的大小
    // int fd;//发送静态网页的文件描述符
     bool IsSendPage=false;

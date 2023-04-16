@@ -1,5 +1,6 @@
 #include"httpconn.hpp"
 #include"lst_timer.h"
+#include"TcpServer.hpp"
 using namespace std;
 
 
@@ -65,38 +66,52 @@ void test_analy_url()
 // }
 
 
-void test_lst_timer()
+// void test_lst_timer()
+// {
+//   sort_timer_list* lst=new sort_timer_list();
+//   //测试add_timer接口
+//   util_timer* ut1=new util_timer();
+//   util_timer* ut2=new util_timer();
+//   util_timer* ut3=new util_timer();
+//   util_timer* ut4=new util_timer();
+//   util_timer* ut5=new util_timer();
+
+//   ut1->expire=1;
+//   ut2->expire=2;
+//   ut3->expire=4;
+//   ut4->expire=3;
+//   ut5->expire=0;
+
+//   lst->add_timer(ut1);
+//   lst->add_timer(ut2);
+//   lst->add_timer(ut3);
+//   lst->add_timer(ut4);
+//   lst->add_timer(ut5);
+//   // ut2->expire=6;
+//   // lst->adjust_timer(ut2);
+//  lst->del_timer(ut3);
+//  lst->del_timer(ut5);
+// }
+
+
+void test_tcp_server()
 {
-  sort_timer_list* lst=new sort_timer_list();
-  //测试add_timer接口
-  util_timer* ut1=new util_timer();
-  util_timer* ut2=new util_timer();
-  util_timer* ut3=new util_timer();
-  util_timer* ut4=new util_timer();
-  util_timer* ut5=new util_timer();
-
-  ut1->expire=1;
-  ut2->expire=2;
-  ut3->expire=4;
-  ut4->expire=3;
-  ut5->expire=0;
-
-  lst->add_timer(ut1);
-  lst->add_timer(ut2);
-  lst->add_timer(ut3);
-  lst->add_timer(ut4);
-  lst->add_timer(ut5);
-  ut2->expire=6;
-  lst->adjust_timer(ut2);
+  TcpServer* tcp=TcpServer::GetTcpServer(8081);
+  int sockfd=tcp->GetListenfd();
+  int fd=tcp->Accept();
+  string s="http/1.1 200 OK\r\n\r\n";
+  int size=send(fd,s.c_str(),s.size(),0);
+  cout<<size<<endl;
+  return;
 }
-
 int main()
 {
   //test_parse_line();
   //test_parse_request_header();
   //test_analy_url();S
   //test_parse_read();
-  test_lst_timer();
+  //test_lst_timer();
+  test_tcp_server();
   return 0;
 }
 

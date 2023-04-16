@@ -41,7 +41,7 @@ class TcpServer
       socklen_t addrlen;
       int fd=accept(listen_sock,(struct sockaddr*)&addr,&addrlen);
       if(fd>0){
-        LOG("INFO","accept success");
+       // LOG("INFO","accept success");
         return fd;
       }
       else{
@@ -59,7 +59,7 @@ class TcpServer
       Socket();
       Bind();
       Listen();
-      LOG("INFO","Tcp InitServer success");
+    //  LOG("INFO","Tcp InitServer success");
 //    LOG(INFO,"InitServer Success..");
     }
 
@@ -71,7 +71,7 @@ class TcpServer
        std::cout<<"socket error"<<std::endl;
        exit(1);
      }
-     LOG(INFO,"Socket success");
+     //LOG(INFO,"Socket success");
      int opt=1;
      setsockopt(listen_sock,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
    }
@@ -89,7 +89,7 @@ class TcpServer
        std::cout<<"bind error"<<std::endl;
        exit(2);
      }
-     LOG(INFO,"bind success");
+   //  LOG(INFO,"bind success");
    }
 
    void Listen()
@@ -99,7 +99,7 @@ class TcpServer
        std::cout<<"Listen error"<<std::endl;
        exit(3);
      }
-     LOG(INFO,"Listen success");
+   //  LOG(INFO,"Listen success");
    }
 
    ~TcpServer()

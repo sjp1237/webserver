@@ -49,7 +49,6 @@ private:
         throw exception();
       }
     }
-    //>
   }
 
   template<class T>
@@ -91,7 +90,6 @@ private:
        if(!task){
          continue;
        }
-
        //任务处理
        //实现一个task任务的处理
     }

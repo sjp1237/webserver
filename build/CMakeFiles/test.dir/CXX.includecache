@@ -6,6 +6,32 @@
 
 #IncludeRegexTransform: 
 
+/home/sjp/webserver/Log.hpp
+iostream
+-
+string
+-
+time.h
+-
+
+/home/sjp/webserver/TcpServer.hpp
+iostream
+-
+sys/types.h
+-
+string.h
+-
+sys/socket.h
+-
+netinet/in.h
+-
+arpa/inet.h
+-
+pthread.h
+-
+Log.hpp
+/home/sjp/webserver/Log.hpp
+
 /home/sjp/webserver/httpconn.hpp
 unordered_map
 -
@@ -41,4 +67,6 @@ httpconn.hpp
 /home/sjp/webserver/httpconn.hpp
 lst_timer.h
 /home/sjp/webserver/lst_timer.h
+TcpServer.hpp
+/home/sjp/webserver/TcpServer.hpp
 
