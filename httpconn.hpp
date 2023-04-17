@@ -18,7 +18,19 @@
 #define OK "200"
 #define BLANK "\r\n"
 #define MAX_FD 1024
-static std::unordered_map<std::string,std::string> suffix_type{{"html","text/html"}};
+
+static std::unordered_map<std::string,std::string> suffix_type{
+  {"html","text/html"},
+  {"txt","text/plain"},
+  {"ppt","application/vnd.ms-powerpoint"},
+  {"zip","application/zip"},
+  {"movie","video/x-sgi-movie"}
+  };
+static std::unordered_map<std::string,std::string> code_desc{
+  {"200","OK"},
+  {"404","NOT FOUND"},
+};
+
  class Request{
     public:
      enum METHOD
@@ -149,7 +161,6 @@ class httpconn{
     int process(); 
 
     //解析http请求
-    HTTP_CODE process_read();
     //构建响应
     HTTP_CODE process_write();
     //解析请求报头
@@ -159,27 +170,28 @@ class httpconn{
     //解析文件
     //do_request中的cgihandle没有测试完成，其余的测试好了
     int  do_request();
+
+    void OpenPage();
+  private:
+    //未测试
     bool CgiHandle();
   private:
     //将url中的路径和参数给分离开来
     //分析文件
     void init();
-
-    private:
+  public:
     //测试成功的接口
     bool AnalyUri();
     void  AnalyFile();
     HTTP_CODE parse_request_line(std::string text); 
+    HTTP_CODE process_read();
   public:
-
     Request* m_request;
     Response* m_response;
     std::string read_buffer;
   private:
-    
     void BuildReponseLine();
-    void BuildResponseHeaer();
-    
+    void BuildResponseHeaer();   
     std::string write_buffer;
     size_t m_read_idx;//保存read_buffer指向的位置
     size_t m_read_start;//保存read_buffer的起始位置
@@ -190,16 +202,11 @@ class httpconn{
     size_t m_start_content;
     int socket;
     bool m_linger=false;
-
     int file_size=0;//发送静态网页的大小
    // int fd;//发送静态网页的文件描述符
     bool IsSendPage=false;
     bool cgi=false;
     int epoll_fd;
+    int fd; //打开的文件描述符
 };
-<<<<<<< HEAD
 
-//master
-=======
-//测试
->>>>>>> sjp

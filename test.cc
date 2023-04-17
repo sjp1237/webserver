@@ -1,4 +1,8 @@
-#include"httpconn.hpp"
+//#include"httpconn.hpp"
+//#include"lst_timer.h"
+//#include"TcpServer.hpp"
+#include"threadPool.hpp"
+#include<unistd.h>
 using namespace std;
 
 
@@ -53,19 +57,105 @@ void test_analy_url()
    // tmp->do_request();
 }
 
-void test_parse_read()
+// void test_parse_read()
+// {
+//     httpconn* tmp=new httpconn();
+//     tmp->read_buffer="get /CMakeCache.txt http1.1\n\rContent-Length: 0\n\r\n\r";
+//     tmp->read_buffer="get /1111.txt http1.1\n\rContent-Length: 0\n\r\n\r";
+
+//     cout<<tmp->read_buffer.size();
+//     tmp->process();
+// }
+
+
+// void test_lst_timer()
+// {
+//   sort_timer_list* lst=new sort_timer_list();
+//   //测试add_timer接口
+//   util_timer* ut1=new util_timer();
+//   util_timer* ut2=new util_timer();
+//   util_timer* ut3=new util_timer();
+//   util_timer* ut4=new util_timer();
+//   util_timer* ut5=new util_timer();
+
+//   ut1->expire=1;
+//   ut2->expire=2;
+//   ut3->expire=4;
+//   ut4->expire=3;
+//   ut5->expire=0;
+
+//   lst->add_timer(ut1);
+//   lst->add_timer(ut2);
+//   lst->add_timer(ut3);
+//   lst->add_timer(ut4);
+//   lst->add_timer(ut5);
+//   // ut2->expire=6;
+//   // lst->adjust_timer(ut2);
+//  lst->del_timer(ut3);
+//  lst->del_timer(ut5);
+// }
+
+
+// void test_tcp_server()
+// {
+//   TcpServer* tcp=TcpServer::GetTcpServer(8081);
+//   int sockfd=tcp->GetListenfd();
+//   int fd=tcp->Accept();
+//   string s="http/1.1 200 OK\r\n\r\n";
+//   int size=send(fd,s.c_str(),s.size(),0);
+//   cout<<size<<endl;
+//   return;
+// }
+
+
+// void test_locker()
+// {
+//     sem* s=new sem();
+//   locker* l=new locker();
+//   l->lock();
+//   s->post();
+//   l->unlock();
+
+//   s->post(); 
+//   s->post(); 
+//   s->wait();  
+// }
+
+struct task{
+  public:
+  int id;
+  int count;
+  task(int i):count(i){
+
+  }
+
+  void run()
+  {
+    cout<<"任务"<<count<<"开始执行"<<endl;
+    sleep(1000);
+    cout<<"任务"<<count<<"执行完成"<<endl;
+  }
+};
+
+void threadPool_test()
 {
-    httpconn* tmp=new httpconn();
-    tmp->read_buffer="post /main http1.1\n\rContent-Length: 8\n\rConnection: keep-alive\n\r\n\ra=19b=20";
-    cout<<tmp->read_buffer.size();
-    tmp->process_read();
+  threadpool<task>* tp=new threadpool<task>(2,3);
+  for(int i=0;i<1000;i++){
+    task* t=new task(i);
+    tp->Push(t);
+  }
+  return;
 }
+
 int main()
 {
   //test_parse_line();
   //test_parse_request_header();
-  //test_analy_url();
-  test_parse_read();
+  //test_analy_url();S
+  //test_parse_read();
+  //test_lst_timer();
+  // test_tcp_server();
+  threadPool_test();
   return 0;
 }
 

@@ -11,7 +11,7 @@
 //分析url资源
 //判断文件是否存在
 //判断文件是否是一个可执行文件，如果是一个可执行文件，则调用cgi机制
-//判断一个文件是否一个普通文件，则将该文件提前打开，并返回相关文件的fd
+//判断一个文件是否一个普通文件，则将该文件提前打开，并保存相关文件的fd
 
 void add(int epoll_fd,int sockfd,int shot)
 {
@@ -57,6 +57,8 @@ void add(int epoll_fd,int sockfd,int shot)
           m_response->code=NOT_FOUND;//404
           m_request->m_path=NOT_FOUND_PAGE;
           m_response->suffix="html";
+          stat(m_request->m_path.c_str(),&buf);
+          m_response->content_size=buf.st_size;
           IsSendPage=true;
           return ;
         }
@@ -111,7 +113,11 @@ httpconn::HTTP_CODE httpconn::process_write()
    //Connection: keep-alive或者是close
    //将响应数据构建在response_body中
    //构建响应行和响应报头
+   
+   //
+   //缺少添加状态描述符
    BuildReponseLine();
+   //缺少添加文件类型的描述
    BuildResponseHeaer();
 }
 
@@ -305,6 +311,16 @@ bool httpconn::AnalyUri(){
     }
 }
 
+void httpconn::OpenPage()
+{
+  fd=open(m_request->m_path.c_str(),O_RDONLY);
+  if(fd<0){
+    //打开失败
+    
+  }
+}
+
+
 int httpconn::do_request()
 {
   //将url中的路径和参数给分开来
@@ -318,6 +334,9 @@ int httpconn::do_request()
   {
     //处理cgi文件
      CgiHandle();
+  }else if(IsSendPage){
+    //处理发送静态网页
+    OpenPage();
   }
 }
 
@@ -327,7 +346,7 @@ int httpconn::do_request()
         m_response->response_body+=" ";
         m_response->response_body+=m_response->code;
         m_response->response_body+=" ";
-        m_response->response_body+=m_response->code_des;
+        m_response->response_body+=code_desc[m_response->code];
         m_response->response_body+=BLANK;
         //std::cout<<response.response_line<<std::endl;
   }

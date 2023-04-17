@@ -1,3 +1,4 @@
+#pragma once
 #include<iostream>
 using namespace std;
 
@@ -37,6 +38,7 @@ class sort_timer_list{
       }
     }
     //将目标定时器添加到链表当中
+    //add_timer测试完毕
     void add_timer(util_timer* timer){
       //如果目标定时器超时时间小于当前链表中所有定时器的超时时间
       //把该定时器插入到链表的头部，作为链表的新的头节点
@@ -48,8 +50,6 @@ class sort_timer_list{
       if(head==nullptr)
       {
          head=tail=timer;
-         head->next=tail;
-         tail->pre=head;
          return;
       }
 
@@ -60,7 +60,7 @@ class sort_timer_list{
         head=timer;
         return;
       }
-      //将timer插入到head的后面
+      //将timer插入到head之后的节点
       add_timer(timer,head);
       return;
     }
@@ -89,13 +89,14 @@ class sort_timer_list{
        }
 
        //如果timer比最后一个节点的时间还要长，则将该节点插入到末尾
-       lst_head->next=timer;
-       timer->pre=lst_head;
+       //此时的lst_head已经走到tail位置
+       tail->next=timer;
+       timer->pre=tail;
        tail=timer;
        return;
     }
 
-    //如果某一个节点被改变，调整该节点在链表中的位置
+    //判断timer放在最后面
     void adjust_timer(util_timer* timer)
     {
       //如果timer是head或者为空，则不需要改变
@@ -111,13 +112,20 @@ class sort_timer_list{
       util_timer* next_timer=timer->next;
       util_timer* pre_timer=timer->pre;
       //连接两个节点
-      next_timer->pre=pre_timer;
-      pre_timer->next=next_timer;
+
+      next_timer->pre=pre_timer; 
+      if(pre_timer){
+          pre_timer->next=next_timer;        
+      }else{
+          //如果pre_timer为nullptr说明timer为head
+          head=next_timer;
+      }
       //将timer节点放在next_timer的后面
       add_timer(timer,next_timer);
+      return ;
     }
 
-    //
+    //调试成功
     void del_timer(util_timer* timer){
       if(!timer){
         return;
@@ -136,16 +144,20 @@ class sort_timer_list{
         //删除头节点
         util_timer* next_timer=head->next;
         delete timer;
-        timer=nullptr;
+
         head=next_timer;
+        head->pre=nullptr;
+        return;
       }
 
 
       if(timer==tail){
         util_timer* pre_timer=tail->pre;
+        pre_timer->next=nullptr;
         delete timer;
-        timer=nullptr;
         tail=pre_timer;
+        tail->next=nullptr;
+        return;
       }
       util_timer* next_timer=timer->next;
       util_timer* pre_timer=timer->pre;
@@ -160,7 +172,6 @@ class sort_timer_list{
     void tick(){
       //获取当前系统时间
       int cur_time=time(NULL);
-
       //遍历每一个节点的时间
       //如果当前时间小于节点的超时时间则跳出
       //如果大于当前时间，则调用处理函数，将删除该节点
