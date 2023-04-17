@@ -1,6 +1,8 @@
-#include"httpconn.hpp"
-#include"lst_timer.h"
-#include"TcpServer.hpp"
+//#include"httpconn.hpp"
+//#include"lst_timer.h"
+//#include"TcpServer.hpp"
+#include"threadPool.hpp"
+#include<unistd.h>
 using namespace std;
 
 
@@ -94,16 +96,57 @@ void test_analy_url()
 // }
 
 
-void test_tcp_server()
+// void test_tcp_server()
+// {
+//   TcpServer* tcp=TcpServer::GetTcpServer(8081);
+//   int sockfd=tcp->GetListenfd();
+//   int fd=tcp->Accept();
+//   string s="http/1.1 200 OK\r\n\r\n";
+//   int size=send(fd,s.c_str(),s.size(),0);
+//   cout<<size<<endl;
+//   return;
+// }
+
+
+// void test_locker()
+// {
+//     sem* s=new sem();
+//   locker* l=new locker();
+//   l->lock();
+//   s->post();
+//   l->unlock();
+
+//   s->post(); 
+//   s->post(); 
+//   s->wait();  
+// }
+
+struct task{
+  public:
+  int id;
+  int count;
+  task(int i):count(i){
+
+  }
+
+  void run()
+  {
+    cout<<"任务"<<count<<"开始执行"<<endl;
+    sleep(1000);
+    cout<<"任务"<<count<<"执行完成"<<endl;
+  }
+};
+
+void threadPool_test()
 {
-  TcpServer* tcp=TcpServer::GetTcpServer(8081);
-  int sockfd=tcp->GetListenfd();
-  int fd=tcp->Accept();
-  string s="http/1.1 200 OK\r\n\r\n";
-  int size=send(fd,s.c_str(),s.size(),0);
-  cout<<size<<endl;
+  threadpool<task>* tp=new threadpool<task>(2,3);
+  for(int i=0;i<1000;i++){
+    task* t=new task(i);
+    tp->Push(t);
+  }
   return;
 }
+
 int main()
 {
   //test_parse_line();
@@ -111,7 +154,8 @@ int main()
   //test_analy_url();S
   //test_parse_read();
   //test_lst_timer();
-  test_tcp_server();
+  // test_tcp_server();
+  threadPool_test();
   return 0;
 }
 

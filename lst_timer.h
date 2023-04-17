@@ -125,7 +125,7 @@ class sort_timer_list{
       return ;
     }
 
-    //
+    //调试成功
     void del_timer(util_timer* timer){
       if(!timer){
         return;
@@ -172,7 +172,6 @@ class sort_timer_list{
     void tick(){
       //获取当前系统时间
       int cur_time=time(NULL);
-
       //遍历每一个节点的时间
       //如果当前时间小于节点的超时时间则跳出
       //如果大于当前时间，则调用处理函数，将删除该节点

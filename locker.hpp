@@ -11,8 +11,6 @@ class locker{
         throw std::exception(); 
       }
     }
-
-
       ~locker(){
          pthread_mutex_destroy(&m_mutex);
       }
@@ -45,7 +43,6 @@ class cond{
     ~cond(){
       pthread_cond_destroy(&m_cond);
     }
-
     //等待
     bool wait(pthread_mutex_t& lock){
       return pthread_cond_wait(&m_cond,&lock)==0;
@@ -73,11 +70,13 @@ class sem{
   }
   //对信号量加锁，调用一次对信号量的值-1，如果值为0，就阻塞
   bool wait(){
-    return sem_wait(&m_sem)==0;
+     sem_wait(&m_sem);
+     return true;
   }
   //增加信号量
   bool post(){
-    return sem_post(&m_sem)==0;
+     sem_post(&m_sem);
+     return true;
   }
   private:
   sem_t m_sem;

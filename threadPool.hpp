@@ -16,17 +16,19 @@ private:
   int m_thread_num;//线程的数量
   //线程数组
   pthread_t* m_threads=nullptr;
-  //请求队列中最多允许的，等待处理的请求的数量
+
+  //请求队列中最多允许的请求的数量
   int m_max_requests;
   //工作队列
   std::list<T*> m_workqueue;
+
+  //线程执行的动作
   static void* work(void* arg);
   //互斥锁
-  locker m_lock;
-  sem m_sem;
+  locker* m_lock;
+  sem* m_sem;
   //信号量
-  //是否结束线程
-    
+  //是否结束线程  
 };
 
  template<class T>
@@ -35,16 +37,20 @@ private:
       m_max_requests(max_requests)
   {
     m_threads=new pthread_t[m_thread_num];
+    m_lock=new locker();
+    m_sem=new sem();
     if(m_threads==nullptr){
       throw exception();
     }
     //创建num个线程，并将线程脱离
     for(int i=0;i<m_thread_num;i++){
       if(pthread_create(m_threads+i,NULL,work,this)!=0){
+        cout<<"创建线程失败"<<endl;
         delete[] m_threads;
         throw exception();
       }
       if(pthread_detach(m_threads[i])!=0){
+        cout<<"分离线程失败"<<endl;
         delete[] m_threads;
         throw exception();
       }
@@ -62,13 +68,15 @@ private:
     //判断队列中的数量是否大于最大的数量
     //将任务放进队列中
     //解锁
-    m_lock.lock();
-    if(m_workqueue.size()>m_max_requests){
+    m_lock->lock();
+    if(m_workqueue.size()>=m_max_requests){
+       m_lock->unlock();
       return false;
     }
     m_workqueue.push_back(avg);
-    m_lock.unlock();
-    m_sem.post();
+    m_lock->unlock();
+    m_sem->post();
+    return true;
   }
 
   template<class T>
@@ -77,16 +85,16 @@ private:
     while(true){
        //通过信号量来判断是否有任务生成
        //加锁的目的是保证一次只能有一个线程能够进入线程池
-       tp->m_sem.wait();
-       tp->m_lock.lock();
+       tp->m_sem->wait();
+       tp->m_lock->lock();
        if(tp->m_workqueue.empty()){
-         tp->m_workqueue.unlock();
+         tp->m_lock->unlock();
          continue;
        }
-       T* task=tp->front();
-       tp->pop_front();
-       tp->m_lock.unlock();
-
+       T* task=tp->m_workqueue.front();
+       tp->m_workqueue.pop_front();
+       tp->m_lock->unlock();
+       task->run();
        if(!task){
          continue;
        }
