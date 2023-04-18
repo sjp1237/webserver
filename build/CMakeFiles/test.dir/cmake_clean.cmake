@@ -2,6 +2,8 @@ FILE(REMOVE_RECURSE
   "CMakeFiles/test.dir/test.cc.o"
   "CMakeFiles/test.dir/httpconn.cc.o"
   "CMakeFiles/test.dir/tool.cc.o"
+  "CMakeFiles/test.dir/webserver.cpp.o"
+  "CMakeFiles/test.dir/TcpServer.cc.o"
   "test.pdb"
   "test"
 )

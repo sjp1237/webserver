@@ -114,6 +114,30 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
+TcpServer.o: TcpServer.cc.o
+.PHONY : TcpServer.o
+
+# target to build an object file
+TcpServer.cc.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/TcpServer.cc.o
+.PHONY : TcpServer.cc.o
+
+TcpServer.i: TcpServer.cc.i
+.PHONY : TcpServer.i
+
+# target to preprocess a source file
+TcpServer.cc.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/TcpServer.cc.i
+.PHONY : TcpServer.cc.i
+
+TcpServer.s: TcpServer.cc.s
+.PHONY : TcpServer.s
+
+# target to generate assembly for a file
+TcpServer.cc.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/TcpServer.cc.s
+.PHONY : TcpServer.cc.s
+
 httpconn.o: httpconn.cc.o
 .PHONY : httpconn.o
 
@@ -186,6 +210,30 @@ tool.cc.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/tool.cc.s
 .PHONY : tool.cc.s
 
+webserver.o: webserver.cpp.o
+.PHONY : webserver.o
+
+# target to build an object file
+webserver.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/webserver.cpp.o
+.PHONY : webserver.cpp.o
+
+webserver.i: webserver.cpp.i
+.PHONY : webserver.i
+
+# target to preprocess a source file
+webserver.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/webserver.cpp.i
+.PHONY : webserver.cpp.i
+
+webserver.s: webserver.cpp.s
+.PHONY : webserver.s
+
+# target to generate assembly for a file
+webserver.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/webserver.cpp.s
+.PHONY : webserver.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -195,6 +243,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... TcpServer.o"
+	@echo "... TcpServer.i"
+	@echo "... TcpServer.s"
 	@echo "... httpconn.o"
 	@echo "... httpconn.i"
 	@echo "... httpconn.s"
@@ -204,6 +255,9 @@ help:
 	@echo "... tool.o"
 	@echo "... tool.i"
 	@echo "... tool.s"
+	@echo "... webserver.o"
+	@echo "... webserver.i"
+	@echo "... webserver.s"
 .PHONY : help
 
 
