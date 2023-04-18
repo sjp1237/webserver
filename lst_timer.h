@@ -5,11 +5,6 @@ using namespace std;
 
 class util_timer;
 
-//用户数据结构
-struct client_data{
-  int sockfd;//文件描述符
-  util_timer* timer;//定时器
-};
 
 
 //定时器
@@ -18,6 +13,7 @@ class util_timer{
    util_timer* pre;
    util_timer* next;
    time_t expire;//任务超时时间
+   //任务回调
    void (*cb_func)(client_data*);//任务回调函数
    client_data* user_data;
   public:
@@ -180,7 +176,7 @@ class sort_timer_list{
       {
          if(cur_timer->expire<=cur_time){
           //当前时间大于节点的超时时间,则说明该节点超时
-          //调用回调函数
+          //调用回调函数清除对应的数据
           cur_timer->cb_func(cur_timer->user_data);
           util_timer* next_timer=cur_timer->next;
           delete cur_timer;

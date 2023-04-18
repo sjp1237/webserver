@@ -1,61 +1,193 @@
 #include"webserver.hpp"
+#include<signal.h>
 
 
 
-
-void add(int epoll_fd,int sockfd,int shot);
-//关闭链接
-int webserver::del(int epoll_fd,int sockfd)
+void Util::handler(int arg)
 {
-  epoll_ctl(epoll_fd,EPOLL_CTL_DEL,sockfd,NULL);
+  //将信号发送过去
+  int msg=arg;
+  send(m_pipe[1],(char*)msg,1,0);
+}
+
+void Util::sig_handler(int sig)
+{
+  struct sigaction sa;
+  memset(&sa,'\0',sizeof(sa));
+  sa.sa_handler=handler;
+  sa.sa_flags=0;
+  sigemptyset(&sa.sa_mask);
+  sigaction(sig,&sa,NULL);
+}
+
+//关闭链接
+void webserver::del(int sockfd)
+{
+  epoll_ctl(m_epollfd,EPOLL_CTL_DEL,sockfd,NULL);
   close(sockfd);
 }
 
-void webserver::timer(int sockfd)
+//删除epoll对象的数据，并且删除lst_timer上的数据
+//关闭连接
+void cb_func(client_data* data)
+{
+  webserver* server=data->server;
+  util_timer* timer=data->timer;
+  server->GetTimerList()->del_timer(timer);
+  server->del(data->sockfd);//关闭链接,并删除epoll对象上的节点
+}
+
+//初始化client_data
+void webserver::add_timer(int sockfd)
 {
     timers[sockfd].sockfd=sockfd;
-    int curtime=time(NULL);
+    timers[sockfd].server=this;
+
+    int curtime=time(NULL)+3*over_time;
     timers[sockfd].timer->expire=curtime+expiretime;
     //将新的时间节点插入到链表中
+    timers[sockfd].timer->cb_func=cb_func;
+    //将新的timer插入到timer节点中
     timer_list->add_timer(timers[sockfd].timer);
 }
 
-
-void webserver::addevent(int sockfd,int events)
+//将新连接放入到epoll对象中
+//并将event存放到events里面
+void webserver::addevent(int sockfd,int m_event,bool shot=false)
 {
-    events[sockfd].data.fd=sockfd;
-    events[sockfd].events=events;
+  epoll_event event;
+  uint32_t events=EPOLLET|m_event;
+  if(shot){
+    events|=EPOLLONESHOT;
+  }
+  epoll_ctl(m_epollfd, EPOLL_CTL_ADD,sockfd,&event);  
+  m_events[sockfd].data.fd=sockfd;
+  m_events[sockfd].events=events;
 }
 
-
-int webserver::dealwrite(int sockfd)
+//处理可写事件
+//此时的响应已经构建完成
+//如果数据发送成功，则将重新将初始化httpconn的数据
+//如果发送失败，则断开连接
+void webserver::DealWrite(int sockfd)
 {
   //此时的响应已经构建完成
   //httpconn调用write，是将响应中的数据一次性发送给对端
   //如果数据发送成功，则将重新将初始化httpconn的数据
   //如果发送失败，则断开连接
-  auto httpconn=usrs[sockfd];
+  auto httpconn=m_usrs[sockfd];
   if(httpconn.Write()){
     //发送成功
     //调整timer_list节点
     timer_list->adjust_timer(timers[sockfd].timer);
-    //一次请求完成，初始化http中的成员变量
+    //清除http中的数据
     httpconn.init();
+    //进行下一次的
+    addevent(sockfd,EPOLLIN,true);
   }else{
-    //发送失败
-    //关闭连接，清除epoll上的节点，清除timers中的
-    del(m_epollfd,sockfd);
-    timer_list->del_timer(timers[sockfd].timer);
+    //发送失败   
+    //清除httpconn上的数据
+    httpconn.clear();
+    del(sockfd);//关闭连接，清除epoll上的节点
+    timer_list->del_timer(timers[sockfd].timer);//删除定时链表中的节点
   }
+}
+
+
+void webserver::DealSig()
+{
+  //将管道中的信号给读取到sig_nums数组中，并将
+  char sig_nums[1024];
+  while(true)
+  {
+    int ch;
+    int sz=recv(m_pipe[0],sig_nums,sizeof(sig_nums),0);
+    if(sz==0){
+      return;
+    }
+    else if(sz<0){
+      return;
+    }
+    else{
+      for(int i=0;i<sz;i++)
+      {
+        switch(sig_nums[i])
+        {
+          case SIGALRM:
+            timeout=true;
+            break;
+          case SIGTERM:
+           stop_server=true;
+           break;
+        }
+      }//for
+    }
+  }//while
+}
+
+//执行完之后，在设置一个闹钟。
+void webserver::DealAlarm()
+{
+  timer_list->tick();
+  alarm(5);
+  timeout=false;
+}
+
+void webserver::DealNewlinker()
+{
+   struct sockaddr peer; 
+   socklen_t len;
+   int fd=accept(m_listenfd,&peer,&len);  
+    //并将链接放进lst_timer
+   add_timer(fd);
+   //将新链接放进epoll对象中
+   //将事件记录到events
+   addevent(fd,EPOLLIN,true);
+}
+
+/*
+1. 读取socket缓冲区到read_buffer
+2. 将httpconn对象放入到线程池中
+3. 调整timer在timers_list中的位置
+*/
+void webserver::DealRead(int sockfd)
+{
+  auto httpusr=m_usrs[sockfd];
+  //将缓冲区中的数据给读取上来
+  m_usrs[sockfd].Read();
+  //将http对象放进线程池中
+  m_threadpool->Push(&httpusr);
+  //调整lst_timer
+  util_timer* timer=timers[sockfd].timer;
+  timer_list->adjust_timer(timer);
+}
+
+
+void webserver::DealError(int sockfd)
+{
+  //错误事件
+  //清除httpconn对象上的数据
+  //将该sockfd从epoll对象中给删除掉
+  //将sockfd从timer_list中给删除掉
+  httpconn usr=m_usrs[sockfd];
+  usr.init();
+  del(sockfd);
+  timer_list->del_timer(timers[sockfd].timer);
 }
 
 void webserver::Run()
 {
   //创建一个数组用于保存所有的客户端信息
-  add(m_epollfd,m_listenfd,1);
-  while(true)
+  addevent(m_epollfd,m_listenfd);
+  addevent(m_epollfd,m_pipe[0]);
+  //设置自定信号函数
+  Util::sig_handler(SIGALRM);
+  Util::sig_handler(SIGTERM);
+  //设置一个闹钟
+  alarm(5);
+  while(!stop_server)
   {
-    int num=epoll_wait(m_epollfd,events,MAX_FD,0);
+    int num=epoll_wait(m_epollfd,m_events,MAX_FD,0);
     if(num<0)
     {
       throw std::bad_alloc();
@@ -67,54 +199,38 @@ void webserver::Run()
     else{
        for(int i=0;i<num;i++)
        {
-         int sockfd=events[i].data.fd;
-         if(events[i].events==EPOLLIN){
+         int sockfd=m_events[i].data.fd;
+         if(m_events[i].events==EPOLLIN){
           //可读事件    
           //可能是listensock，获取新链接
           //可能是管道发出的信号
           if(sockfd==m_listenfd){    
             //获取到新链接
-            struct sockaddr peer; 
-            socklen_t len;
-            int fd=accept(m_listenfd,&peer,&len);
-            //将新链接放进epoll对象中
-            
-            add(m_epollfd,fd,1);
-            //并将链接放进lst_timer
-            timer(fd);
-            //将事件记录到events
-            addevent(fd,EPOLLIN);
+           DealNewlinker();
           }
-          else if(events[i].data.fd==usrs->pipefd[0]){
-            //有信号发生，检查一下lst_timer
-
+          else if(m_events[i].data.fd==m_usrs->pipefd[0]){
+            //处理信号，因为IO操作是比较
+            DealSig();//
           }
           else{
-            //将缓冲区的数据读取上来
-            auto httpusr=usrs[sockfd];
-            usrs[sockfd].Read();
-            //将事件放进线程池中
-            m_threadpool->Push(&httpusr);
-            //调整lst_timer
-            timer_list->adjust_timer();
+            //普通链接的读取操作
+            DealRead(m_events[i].data.fd);
           }
          }
-         else if(events[i].events==EPOLLOUT)
+         else if(m_events[i].events==EPOLLOUT)
          {
-          //可写事件
-          //此时的响应已经构建完成
-          //如果数据发送成功，则将重新将初始化httpconn的数据
-          //如果发送失败，则断开连接
-          dealwrite(sockfd);
+            DealWrite(sockfd);
          }
-         else if(events[i].events&(EPOLLERR|EPOLLHUP|EPOLLRDHUP)){
-          //错误事件
-          //将该sockfd从epoll对象中给删除掉
-          //将sockfd从timer_list中给删除掉
-          del(m_epollfd,sockfd);
-          timer_list->del_timer(timers[sockfd].timer);
+         else if(m_events[i].events&(EPOLLERR|EPOLLHUP|EPOLLRDHUP)){
+          DealError();
          }
-       }
+       }//for
+    }//else
+
+    if(timeout)
+    {
+      //进入链表执行定时tick
+      DealAlarm();
     }
   }
 }

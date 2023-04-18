@@ -13,17 +13,7 @@
 //判断文件是否是一个可执行文件，如果是一个可执行文件，则调用cgi机制
 //判断一个文件是否一个普通文件，则将该文件提前打开，并保存相关文件的fd
 
-void add(int epoll_fd,int sockfd,int shot)
-{
-  epoll_event event;
-  uint32_t events=EPOLLET|EPOLLIN;
-  if(shot){
-    events|=EPOLLONESHOT;
-  }
-  epoll_ctl(epoll_fd, EPOLL_CTL_ADD,sockfd,&event);  
-}
-
-  void  httpconn::AnalyFile(){
+void  httpconn::AnalyFile(){
         std::string path=m_request->m_path;
         m_request->m_path="wwwroot";
         m_request->m_path+=path;
@@ -127,7 +117,7 @@ int httpconn::process(){
   httpconn::HTTP_CODE res=process_read();
    if(res==httpconn::NO_REQUEST){
        //重新将socket设置进epoll对象中
-       add(epoll_fd,socket,true);
+       addevent(epoll_fd,socket,true);
        return 0;
    }
    //读取完请求后，解析好请求，接下来构建响应
@@ -563,14 +553,29 @@ bool httpconn::Write()
     }
   }
  }
-  return true;
+return true;
 }
 
 
+void httpconn::clear()
+{
+  if(fd!=-1){
+    close(fd);
+    fd=-1;
+  }
+  //delete m_request;
+  //delete m_response;
+}
+
 void httpconn::init()
 {
+  if(fd!=-1){
+    close(fd);
+    fd=-1;
+  }
   m_request->init();
   m_response->init();
+
   m_read_idx=0;
   m_read_start=0;
   m_check_idx=0;
@@ -582,7 +587,7 @@ void httpconn::init()
   file_size=0;
   IsSendPage=false;
   cgi=false;
-
+  
   write_buffer.clear();
   read_buffer.clear();
 }

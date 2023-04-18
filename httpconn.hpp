@@ -56,7 +56,7 @@ static std::unordered_map<std::string,std::string> code_desc{
       m_content_len=0;
       content.clear();
     //  request_header.clear();
-     // header_map.clear();
+    // header_map.clear();
 
       m_content_pos=0;
     }
@@ -144,22 +144,24 @@ class httpconn{
         LINE_OPEN     //读取的行不完整
     };
     
-    
-  public:
+public:
+    int Read();//将缓冲区中的数据读取到read_buffer中
+    //处理read_buffer中的数据,有限状态机处理
+    //将response中的response_body和response_content中的数据发送给对端
+    bool Write();
+    //由工作线程进行工作
+    int process(); 
+    //初始化数据
+    void init();
+
+    void clear();
+private:
     //从读缓冲区中读取一行数据
     LINE_STATUS parse_line();
     //返回一行的起始位置
     const char* read_line(){
       return read_buffer.c_str()+m_start_line;
     }
-    int Read();//将缓冲区中的数据读取到read_buffer中
-    //处理read_buffer中的数据,有限状态机处理
-
-    //将response中的response_body和response_content中的数据发送给对端
-    bool Write();
-    //由工作线程进行工作
-    int process(); 
-
     //解析http请求
     //构建响应
     HTTP_CODE process_write();
@@ -170,28 +172,25 @@ class httpconn{
     //解析文件
     //do_request中的cgihandle没有测试完成，其余的测试好了
     int  do_request();
-
     void OpenPage();
   private:
     //未测试
     bool CgiHandle();
-  private:
-    //将url中的路径和参数给分离开来
-    //分析文件
-    void init();
   public:
     //测试成功的接口
-    bool AnalyUri();
-    void  AnalyFile();
+    bool AnalyUri();//将url中的路径和参数给分离开来
+    void  AnalyFile();//分析文件
     HTTP_CODE parse_request_line(std::string text); 
     HTTP_CODE process_read();
-  public:
+  private:
     Request* m_request;
     Response* m_response;
     std::string read_buffer;
   private:
     void BuildReponseLine();
     void BuildResponseHeaer();   
+  
+  private:
     std::string write_buffer;
     size_t m_read_idx;//保存read_buffer指向的位置
     size_t m_read_start;//保存read_buffer的起始位置
@@ -207,5 +206,5 @@ class httpconn{
     bool IsSendPage=false;
     bool cgi=false;
     int epoll_fd;
-    int fd; //打开的文件描述符
+    int fd=-1; //打开的文件描述符
 };
