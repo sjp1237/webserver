@@ -162,6 +162,30 @@ httpconn.cc.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/httpconn.cc.s
 .PHONY : httpconn.cc.s
 
+lst_timer.o: lst_timer.cc.o
+.PHONY : lst_timer.o
+
+# target to build an object file
+lst_timer.cc.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/lst_timer.cc.o
+.PHONY : lst_timer.cc.o
+
+lst_timer.i: lst_timer.cc.i
+.PHONY : lst_timer.i
+
+# target to preprocess a source file
+lst_timer.cc.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/lst_timer.cc.i
+.PHONY : lst_timer.cc.i
+
+lst_timer.s: lst_timer.cc.s
+.PHONY : lst_timer.s
+
+# target to generate assembly for a file
+lst_timer.cc.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/lst_timer.cc.s
+.PHONY : lst_timer.cc.s
+
 test.o: test.cc.o
 .PHONY : test.o
 
@@ -249,6 +273,9 @@ help:
 	@echo "... httpconn.o"
 	@echo "... httpconn.i"
 	@echo "... httpconn.s"
+	@echo "... lst_timer.o"
+	@echo "... lst_timer.i"
+	@echo "... lst_timer.s"
 	@echo "... test.o"
 	@echo "... test.i"
 	@echo "... test.s"

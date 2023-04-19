@@ -167,13 +167,37 @@ CMakeFiles/test.dir/TcpServer.cc.o.provides: CMakeFiles/test.dir/TcpServer.cc.o.
 
 CMakeFiles/test.dir/TcpServer.cc.o.provides.build: CMakeFiles/test.dir/TcpServer.cc.o
 
+CMakeFiles/test.dir/lst_timer.cc.o: CMakeFiles/test.dir/flags.make
+CMakeFiles/test.dir/lst_timer.cc.o: ../lst_timer.cc
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_6)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/lst_timer.cc.o"
+	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/lst_timer.cc.o -c /home/sjp/webserver/lst_timer.cc
+
+CMakeFiles/test.dir/lst_timer.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.dir/lst_timer.cc.i"
+	/opt/rh/devtoolset-7/root/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/sjp/webserver/lst_timer.cc > CMakeFiles/test.dir/lst_timer.cc.i
+
+CMakeFiles/test.dir/lst_timer.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/lst_timer.cc.s"
+	/opt/rh/devtoolset-7/root/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/sjp/webserver/lst_timer.cc -o CMakeFiles/test.dir/lst_timer.cc.s
+
+CMakeFiles/test.dir/lst_timer.cc.o.requires:
+.PHONY : CMakeFiles/test.dir/lst_timer.cc.o.requires
+
+CMakeFiles/test.dir/lst_timer.cc.o.provides: CMakeFiles/test.dir/lst_timer.cc.o.requires
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/lst_timer.cc.o.provides.build
+.PHONY : CMakeFiles/test.dir/lst_timer.cc.o.provides
+
+CMakeFiles/test.dir/lst_timer.cc.o.provides.build: CMakeFiles/test.dir/lst_timer.cc.o
+
 # Object files for target test
 test_OBJECTS = \
 "CMakeFiles/test.dir/test.cc.o" \
 "CMakeFiles/test.dir/httpconn.cc.o" \
 "CMakeFiles/test.dir/tool.cc.o" \
 "CMakeFiles/test.dir/webserver.cpp.o" \
-"CMakeFiles/test.dir/TcpServer.cc.o"
+"CMakeFiles/test.dir/TcpServer.cc.o" \
+"CMakeFiles/test.dir/lst_timer.cc.o"
 
 # External object files for target test
 test_EXTERNAL_OBJECTS =
@@ -183,6 +207,7 @@ test: CMakeFiles/test.dir/httpconn.cc.o
 test: CMakeFiles/test.dir/tool.cc.o
 test: CMakeFiles/test.dir/webserver.cpp.o
 test: CMakeFiles/test.dir/TcpServer.cc.o
+test: CMakeFiles/test.dir/lst_timer.cc.o
 test: CMakeFiles/test.dir/build.make
 test: CMakeFiles/test.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable test"
@@ -197,6 +222,7 @@ CMakeFiles/test.dir/requires: CMakeFiles/test.dir/httpconn.cc.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/tool.cc.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/webserver.cpp.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/TcpServer.cc.o.requires
+CMakeFiles/test.dir/requires: CMakeFiles/test.dir/lst_timer.cc.o.requires
 .PHONY : CMakeFiles/test.dir/requires
 
 CMakeFiles/test.dir/clean:

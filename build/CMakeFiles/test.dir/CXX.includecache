@@ -32,26 +32,6 @@ pthread.h
 Log.hpp
 /home/sjp/webserver/Log.hpp
 
-/home/sjp/webserver/httpconn.cc
-httpconn.hpp
-/home/sjp/webserver/httpconn.hpp
-sys/types.h
--
-webserver.hpp
-/home/sjp/webserver/webserver.hpp
-sys/socket.h
--
-iostream
--
-string.h
--
-sys/socket.h
--
-sys/stat.h
--
-tool.hpp
-/home/sjp/webserver/tool.hpp
-
 /home/sjp/webserver/httpconn.hpp
 unordered_map
 -
@@ -90,14 +70,6 @@ semaphore.h
 iostream
 -
 
-/home/sjp/webserver/test.cc
-threadPool.hpp
-/home/sjp/webserver/threadPool.hpp
-unistd.h
--
-webserver.hpp
-/home/sjp/webserver/webserver.hpp
-
 /home/sjp/webserver/threadPool.hpp
 pthread.h
 -
@@ -107,16 +79,6 @@ iostream
 -
 locker.hpp
 /home/sjp/webserver/locker.hpp
-
-/home/sjp/webserver/tool.hpp
-iostream
--
-string
--
-sys/types.h
--
-sys/socket.h
--
 
 /home/sjp/webserver/webserver.cpp
 webserver.hpp

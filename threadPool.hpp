@@ -94,7 +94,7 @@ private:
        T* task=tp->m_workqueue.front();
        tp->m_workqueue.pop_front();
        tp->m_lock->unlock();
-       task->run();
+       task->process();
        if(!task){
          continue;
        }

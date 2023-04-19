@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sys/sendfile.h>
 #include<sys/epoll.h>
+
 #include"lst_timer.h"
 
 #define HOME_PAGE "index.html"
@@ -110,8 +111,8 @@ class httpconn{
     static const int READ_BUFFER_SIZE = 2048;
     static const int WRITE_BUFFER_SIZE = 1024;
   public:
-  util_timer timers[MAX_FD];
-  int pipefd;
+  //util_timer timers[MAX_FD];
+  //int pipefd;
   public:
     httpconn()
     {
@@ -207,4 +208,5 @@ private:
     bool cgi=false;
     int epoll_fd;
     int fd=-1; //打开的文件描述符
+    //webserver* server;
 };

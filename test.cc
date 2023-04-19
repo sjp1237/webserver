@@ -3,6 +3,7 @@
 //#include"TcpServer.hpp"
 #include"threadPool.hpp"
 #include<unistd.h>
+#include"webserver.hpp"
 using namespace std;
 
 
@@ -137,14 +138,39 @@ struct task{
   }
 };
 
-void threadPool_test()
+// void threadPool_test()
+// {
+//   threadpool<task>* tp=new threadpool<task>(2,3);
+//   for(int i=0;i<1000;i++){
+//     task* t=new task(i);
+//     tp->Push(t);
+//   }
+//   return;
+// }
+
+
+void test_webservr()
 {
-  threadpool<task>* tp=new threadpool<task>(2,3);
-  for(int i=0;i<1000;i++){
-    task* t=new task(i);
-    tp->Push(t);
+  webserver* server=webserver::GetInstant();
+  server->Run();
+}
+
+
+void test()
+{
+  int pipe[2];
+  socketpair(AF_UNIX,SOCK_STREAM,0,pipe);
+  char tmp[]="hello world";
+  write(pipe[1],tmp,sizeof(tmp));
+
+  
+  while(true){
+    char tmp1[20];
+    int size=recv(pipe[0],tmp1,sizeof(tmp1),0);
+    if(size>0){
+      cout<<tmp1<<endl;
+    }
   }
-  return;
 }
 
 int main()
@@ -155,7 +181,9 @@ int main()
   //test_parse_read();
   //test_lst_timer();
   // test_tcp_server();
-  threadPool_test();
+ // threadPool_test();
+  test_webservr();
+  //test();
   return 0;
 }
 

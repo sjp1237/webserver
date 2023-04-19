@@ -1,12 +1,11 @@
 #include"httpconn.hpp"
 #include<sys/types.h>
+#include"webserver.hpp"
 #include<sys/socket.h>
 #include<iostream>
 #include<string.h>
 #include<sys/socket.h>   
 #include <sys/stat.h>
-
-
 #include"tool.hpp"                                                               
 //分析url资源
 //判断文件是否存在
@@ -117,7 +116,7 @@ int httpconn::process(){
   httpconn::HTTP_CODE res=process_read();
    if(res==httpconn::NO_REQUEST){
        //重新将socket设置进epoll对象中
-       addevent(epoll_fd,socket,true);
+      webserver::GetInstant()->addevent(epoll_fd,socket,true);
        return 0;
    }
    //读取完请求后，解析好请求，接下来构建响应

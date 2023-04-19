@@ -2,12 +2,64 @@
 #include<signal.h>
 
 
+webserver* webserver::instant=nullptr;
+mutex webserver::m_mutex;
+
+
+void Util::setnoblocking(int fd)
+{
+  int oldstat=fcntl(fd,F_GETFL);
+  int newstat=oldstat|O_NONBLOCK;
+  fcntl(fd,F_SETFL,newstat);
+  return;
+}
+
+int* Util::m_pipe=NULL;
+webserver* webserver::GetInstant()
+{
+  if(instant==nullptr){
+    m_mutex.lock();
+   if(instant==nullptr){
+    instant=new webserver();
+    }
+     m_mutex.unlock();
+  }
+  return instant;
+}
+
+webserver::webserver(int port)
+ :m_port(port)
+{
+  m_usrs=new httpconn[MAX_FD];
+  try{
+    m_threadpool=new threadpool<httpconn>;
+     //创建管道
+   if(socketpair(AF_UNIX,SOCK_STREAM,0,m_pipe)<0)
+   throw "创建管道失败";
+ }
+ catch(...){
+    exit(-1);
+ }
+ m_tcp=TcpServer::GetTcpServer(port);
+ m_listenfd=m_tcp->GetListenfd();;
+ m_epollfd=epoll_create(1024);
+ timer_list=new sort_timer_list();
+ 
+ timers=new client_data[MAX_FD];
+ m_events=new epoll_event[MAX_FD];
+ Util::m_pipe=m_pipe;
+}
 
 void Util::handler(int arg)
 {
   //将信号发送过去
-  int msg=arg;
-  send(m_pipe[1],(char*)msg,1,0);
+  int save_errno = errno;
+  char msg=arg;
+  if(send(m_pipe[1],&msg,sizeof(msg),0)==-1){
+    cout<<"send error"<<endl;
+  }
+    errno = save_errno;
+  return;
 }
 
 void Util::sig_handler(int sig)
@@ -15,9 +67,11 @@ void Util::sig_handler(int sig)
   struct sigaction sa;
   memset(&sa,'\0',sizeof(sa));
   sa.sa_handler=handler;
-  sa.sa_flags=0;
+  //sa.sa_flags=0;
   sigemptyset(&sa.sa_mask);
-  sigaction(sig,&sa,NULL);
+  if(sigaction(sig,&sa,NULL)==-1){
+    cout<<"webserver.cpp 68 : signaction fail"<<endl;
+  }
 }
 
 //关闭链接
@@ -41,28 +95,30 @@ void cb_func(client_data* data)
 void webserver::add_timer(int sockfd)
 {
     timers[sockfd].sockfd=sockfd;
+    timers[sockfd].server=this;    
+    timers[sockfd].timer=new util_timer();
     timers[sockfd].server=this;
-
-    int curtime=time(NULL)+3*over_time;
+    int curtime=time(NULL); 
     timers[sockfd].timer->expire=curtime+expiretime;
     //将新的时间节点插入到链表中
     timers[sockfd].timer->cb_func=cb_func;
     //将新的timer插入到timer节点中
     timer_list->add_timer(timers[sockfd].timer);
+    //timer的删除是在定时链表的del_timer接口就已经清除了
+    return;
 }
 
 //将新连接放入到epoll对象中
 //并将event存放到events里面
-void webserver::addevent(int sockfd,int m_event,bool shot=false)
+void webserver::addevent(int sockfd,int m_event=EPOLLIN,bool shot)
 {
   epoll_event event;
-  uint32_t events=EPOLLET|m_event;
+  event.events=EPOLLET|m_event;
+  event.data.fd=sockfd;
   if(shot){
-    events|=EPOLLONESHOT;
+    event.events|=EPOLLONESHOT;
   }
   epoll_ctl(m_epollfd, EPOLL_CTL_ADD,sockfd,&event);  
-  m_events[sockfd].data.fd=sockfd;
-  m_events[sockfd].events=events;
 }
 
 //处理可写事件
@@ -98,8 +154,6 @@ void webserver::DealSig()
 {
   //将管道中的信号给读取到sig_nums数组中，并将
   char sig_nums[1024];
-  while(true)
-  {
     int ch;
     int sz=recv(m_pipe[0],sig_nums,sizeof(sig_nums),0);
     if(sz==0){
@@ -122,7 +176,6 @@ void webserver::DealSig()
         }
       }//for
     }
-  }//while
 }
 
 //执行完之后，在设置一个闹钟。
@@ -178,13 +231,16 @@ void webserver::DealError(int sockfd)
 void webserver::Run()
 {
   //创建一个数组用于保存所有的客户端信息
-  addevent(m_epollfd,m_listenfd);
-  addevent(m_epollfd,m_pipe[0]);
+  addevent(m_listenfd);
+  addevent(m_pipe[0]);
+  Util::setnoblocking(m_pipe[1]);
+  Util::setnoblocking(m_pipe[0]);
+
   //设置自定信号函数
   Util::sig_handler(SIGALRM);
   Util::sig_handler(SIGTERM);
   //设置一个闹钟
-  alarm(5);
+  alarm(2);
   while(!stop_server)
   {
     int num=epoll_wait(m_epollfd,m_events,MAX_FD,0);
@@ -208,13 +264,13 @@ void webserver::Run()
             //获取到新链接
            DealNewlinker();
           }
-          else if(m_events[i].data.fd==m_usrs->pipefd[0]){
+          else if(sockfd==m_pipe[0]){
             //处理信号，因为IO操作是比较
             DealSig();//
           }
           else{
             //普通链接的读取操作
-            DealRead(m_events[i].data.fd);
+            DealRead(sockfd);
           }
          }
          else if(m_events[i].events==EPOLLOUT)
@@ -222,7 +278,7 @@ void webserver::Run()
             DealWrite(sockfd);
          }
          else if(m_events[i].events&(EPOLLERR|EPOLLHUP|EPOLLRDHUP)){
-          DealError();
+          DealError(sockfd);
          }
        }//for
     }//else
@@ -232,5 +288,5 @@ void webserver::Run()
       //进入链表执行定时tick
       DealAlarm();
     }
-  }
+  }//while
 }

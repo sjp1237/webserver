@@ -4,6 +4,7 @@ FILE(REMOVE_RECURSE
   "CMakeFiles/test.dir/tool.cc.o"
   "CMakeFiles/test.dir/webserver.cpp.o"
   "CMakeFiles/test.dir/TcpServer.cc.o"
+  "CMakeFiles/test.dir/lst_timer.cc.o"
   "test.pdb"
   "test"
 )
