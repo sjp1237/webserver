@@ -109,7 +109,7 @@
       }
 
       //只有一个节点
-      if(head->next==tail&&tail==timer){
+      if(head==tail){
         delete head;
         head=nullptr;
         tail=nullptr;
@@ -159,10 +159,9 @@
          if(cur_timer->expire<=cur_time){
           //当前时间大于节点的超时时间,则说明该节点超时
           //清除用户数据
+          util_timer* next_timer=cur_timer->next;
           cur_timer->cb_func(cur_timer->user_data);
           //删除对应的节点
-          util_timer* next_timer=cur_timer->next;
-          delete cur_timer;
           head=next_timer;;
           cur_timer=head; 
          }else{

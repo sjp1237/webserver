@@ -114,7 +114,8 @@ class httpconn{
   //util_timer timers[MAX_FD];
   //int pipefd;
   public:
-    httpconn()
+    httpconn(int sockfet=0)
+    :m_socket(sockfet)
     {
       m_request=new Request();
       m_response=new Response();
@@ -154,7 +155,7 @@ public:
     int process(); 
     //初始化数据
     void init();
-
+    void setfd(int sockfd);
     void clear();
 private:
     //从读缓冲区中读取一行数据
@@ -200,7 +201,7 @@ private:
     size_t m_start_line;//当前行的起始位置
     CHECK_STATE m_check_state;//记录解析哪个位置,请求行，请求报头，请求正文
     size_t m_start_content;
-    int socket;
+    int m_socket;
     bool m_linger=false;
     int file_size=0;//发送静态网页的大小
    // int fd;//发送静态网页的文件描述符

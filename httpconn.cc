@@ -71,13 +71,14 @@ int httpconn::Read(){
     return false;
   }
   while(true){
-    ssize_t size=recv(socket,(void*)read_buffer[m_read_idx],READ_BUFFER_SIZE-m_read_idx,MSG_DONTWAIT);
+    char str[1024];
+    ssize_t size=recv(m_socket,str,1024,MSG_DONTWAIT);
      if(size==0){
        //对端关闭
        return false;
     }
-    else if(size<0){
-      if(errno&EAGAIN||errno&EWOULDBLOCK){
+     else if(size<0){
+      if(errno==EAGAIN||errno==EWOULDBLOCK){
         //没有数据了
         break;
       }
@@ -85,6 +86,7 @@ int httpconn::Read(){
         return false;
       }
     }
+    read_buffer+=str;
     m_read_idx+=size;
     if(m_read_idx>=READ_BUFFER_SIZE){
       break;
@@ -116,13 +118,19 @@ int httpconn::process(){
   httpconn::HTTP_CODE res=process_read();
    if(res==httpconn::NO_REQUEST){
        //重新将socket设置进epoll对象中
-      webserver::GetInstant()->addevent(epoll_fd,socket,true);
+      webserver::GetInstant()->addevent(epoll_fd,m_socket,true);
        return 0;
    }
    //读取完请求后，解析好请求，接下来构建响应
   res=process_write();
   return 0;
 }
+
+
+  void httpconn::setfd(int sockfd)
+  {
+    m_socket=sockfd;
+  }
 
 //解析请求
 httpconn::HTTP_CODE httpconn::process_read(){
@@ -494,7 +502,7 @@ bool httpconn::Write()
   {
      //发送response_body
      int len=response_body.size()-start;
-     int size=send(socket,response_body.c_str()+start,len,0);
+     int size=send(m_socket,response_body.c_str()+start,len,0);
      if(size==0)
      {
           if(size>0){
@@ -517,7 +525,7 @@ bool httpconn::Write()
          //std::cout<<"content_size: "<<content_size<<std::endl;
          off_t start=0;
          while(true){
-           int size=sendfile(socket,m_response->fd,&start,content_size);
+           int size=sendfile(m_socket,m_response->fd,&start,content_size);
            if(start+size>=content_size){
              break;
            }
@@ -537,7 +545,7 @@ bool httpconn::Write()
       while(true)
       {
       int len=response_content.size()-start;
-      int size=send(socket,response_content.c_str()+start,len,0);
+      int size=send(m_socket,response_content.c_str()+start,len,0);
       if(size==0)
       {
           if(size>0){

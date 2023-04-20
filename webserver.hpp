@@ -11,6 +11,7 @@
 #include<unistd.h>
 #include<mutex>
 #define EXPIRETIME 1
+#define ALARMTIME 5
 using std::cout;
 using std::endl;
 

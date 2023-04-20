@@ -58,7 +58,7 @@ void Util::handler(int arg)
   if(send(m_pipe[1],&msg,sizeof(msg),0)==-1){
     cout<<"send error"<<endl;
   }
-    errno = save_errno;
+  errno = save_errno;
   return;
 }
 
@@ -85,6 +85,7 @@ void webserver::del(int sockfd)
 //关闭连接
 void cb_func(client_data* data)
 {
+  //data->server为NULL
   webserver* server=data->server;
   util_timer* timer=data->timer;
   server->GetTimerList()->del_timer(timer);
@@ -95,11 +96,12 @@ void cb_func(client_data* data)
 void webserver::add_timer(int sockfd)
 {
     timers[sockfd].sockfd=sockfd;
-    timers[sockfd].server=this;    
+    //timers[sockfd].server=this;    
     timers[sockfd].timer=new util_timer();
     timers[sockfd].server=this;
     int curtime=time(NULL); 
     timers[sockfd].timer->expire=curtime+expiretime;
+    timers[sockfd].timer->user_data=&timers[sockfd];
     //将新的时间节点插入到链表中
     timers[sockfd].timer->cb_func=cb_func;
     //将新的timer插入到timer节点中
@@ -182,7 +184,7 @@ void webserver::DealSig()
 void webserver::DealAlarm()
 {
   timer_list->tick();
-  alarm(5);
+  alarm(ALARMTIME);
   timeout=false;
 }
 
@@ -193,6 +195,7 @@ void webserver::DealNewlinker()
    int fd=accept(m_listenfd,&peer,&len);  
     //并将链接放进lst_timer
    add_timer(fd);
+   m_usrs[fd].setfd(fd);
    //将新链接放进epoll对象中
    //将事件记录到events
    addevent(fd,EPOLLIN,true);
@@ -205,7 +208,7 @@ void webserver::DealNewlinker()
 */
 void webserver::DealRead(int sockfd)
 {
-  auto httpusr=m_usrs[sockfd];
+  auto& httpusr=m_usrs[sockfd];
   //将缓冲区中的数据给读取上来
   m_usrs[sockfd].Read();
   //将http对象放进线程池中
@@ -240,7 +243,7 @@ void webserver::Run()
   Util::sig_handler(SIGALRM);
   Util::sig_handler(SIGTERM);
   //设置一个闹钟
-  alarm(2);
+  alarm(ALARMTIME);
   while(!stop_server)
   {
     int num=epoll_wait(m_epollfd,m_events,MAX_FD,0);
