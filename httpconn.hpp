@@ -81,8 +81,7 @@ static std::unordered_map<std::string,std::string> code_desc{
       std::string response_line;    
       std::string version;    
       std::string code="200";    
-      std::string code_des;    
-      int fd;//网页文件的打开    
+      std::string code_des;       
       std::string suffix;//后缀    
       int content_size; //响应正文的大小
       std::string response_body;//响应行+响应报头
@@ -157,6 +156,9 @@ public:
     void init();
     void setfd(int sockfd);
     void clear();
+    bool Is_linker(){
+      return m_linger;
+    }
 private:
     //从读缓冲区中读取一行数据
     LINE_STATUS parse_line();
@@ -175,6 +177,7 @@ private:
     //do_request中的cgihandle没有测试完成，其余的测试好了
     int  do_request();
     void OpenPage();
+
   private:
     //未测试
     bool CgiHandle();

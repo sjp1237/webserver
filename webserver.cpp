@@ -112,15 +112,19 @@ void webserver::add_timer(int sockfd)
 
 //将新连接放入到epoll对象中
 //并将event存放到events里面
-void webserver::addevent(int sockfd,int m_event=EPOLLIN,bool shot)
+//flag是用来设定是水平触发还是边缘触发
+void webserver::addevent(int sockfd,int m_event,int op,bool flaget,bool shot)
 {
   epoll_event event;
-  event.events=EPOLLET|m_event;
+  event.events=m_event;
+  if(flaget){
+      event.events|=EPOLLET;
+  }
   event.data.fd=sockfd;
   if(shot){
     event.events|=EPOLLONESHOT;
   }
-  epoll_ctl(m_epollfd, EPOLL_CTL_ADD,sockfd,&event);  
+  epoll_ctl(m_epollfd, op,sockfd,&event);  
 }
 
 //处理可写事件
@@ -137,11 +141,21 @@ void webserver::DealWrite(int sockfd)
   if(httpconn.Write()){
     //发送成功
     //调整timer_list节点
-    timer_list->adjust_timer(timers[sockfd].timer);
-    //清除http中的数据
-    httpconn.init();
-    //进行下一次的
-    addevent(sockfd,EPOLLIN,true);
+    if(httpconn.Is_linker()){
+      timer_list->adjust_timer(timers[sockfd].timer);
+      //清除http中的数据
+      httpconn.init();
+      //进行下一次的
+    // addevent(int sockfd,int events=EPOLLIN,int op=EPOLL_CTL_ADD,bool flaget=true,bool shot=false);
+      addevent(sockfd,EPOLLIN,EPOLL_CTL_MOD,true,true);
+    }else{
+      //断开连接  
+      //清除httpconn上的数据
+      httpconn.clear();
+      timer_list->del_timer(timers[sockfd].timer);//删除定时链表中的节点
+      del(sockfd);//关闭连接，清除epoll上的节点
+    }
+
   }else{
     //发送失败   
     //清除httpconn上的数据
@@ -155,7 +169,7 @@ void webserver::DealWrite(int sockfd)
 void webserver::DealSig()
 {
   //将管道中的信号给读取到sig_nums数组中，并将
-  char sig_nums[1024];
+    char sig_nums[1024];
     int ch;
     int sz=recv(m_pipe[0],sig_nums,sizeof(sig_nums),0);
     if(sz==0){
@@ -281,11 +295,10 @@ void webserver::Run()
             DealWrite(sockfd);
          }
          else if(m_events[i].events&(EPOLLERR|EPOLLHUP|EPOLLRDHUP)){
-          DealError(sockfd);
+            DealError(sockfd);
          }
        }//for
     }//else
-
     if(timeout)
     {
       //进入链表执行定时tick

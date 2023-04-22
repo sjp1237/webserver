@@ -11,7 +11,7 @@
 #include<unistd.h>
 #include<mutex>
 #define EXPIRETIME 1
-#define ALARMTIME 5
+#define ALARMTIME 100000
 using std::cout;
 using std::endl;
 
@@ -56,7 +56,7 @@ public:
    //添加新的节点到lst_timer
     void add_timer(int sockfd);
     //epoll有关
-    void addevent(int sockfd,int events,bool shot=false);
+    void addevent(int sockfd,int events=EPOLLIN,int op=EPOLL_CTL_ADD,bool flaget=true,bool shot=false);
     //关闭链接
     void del(int sockfd);
    // static void* ThreadRun(void* arg);

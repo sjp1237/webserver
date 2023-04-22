@@ -113,6 +113,7 @@
         delete head;
         head=nullptr;
         tail=nullptr;
+        timer=nullptr;
         return;
       }
 
@@ -121,7 +122,7 @@
         //删除头节点
         util_timer* next_timer=head->next;
         delete timer;
-
+        timer=nullptr;
         head=next_timer;
         head->pre=nullptr;
         return;
