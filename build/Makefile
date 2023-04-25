@@ -114,6 +114,30 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
+TcpServer.o: TcpServer.cc.o
+.PHONY : TcpServer.o
+
+# target to build an object file
+TcpServer.cc.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/TcpServer.cc.o
+.PHONY : TcpServer.cc.o
+
+TcpServer.i: TcpServer.cc.i
+.PHONY : TcpServer.i
+
+# target to preprocess a source file
+TcpServer.cc.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/TcpServer.cc.i
+.PHONY : TcpServer.cc.i
+
+TcpServer.s: TcpServer.cc.s
+.PHONY : TcpServer.s
+
+# target to generate assembly for a file
+TcpServer.cc.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/TcpServer.cc.s
+.PHONY : TcpServer.cc.s
+
 httpconn.o: httpconn.cc.o
 .PHONY : httpconn.o
 
@@ -137,6 +161,30 @@ httpconn.s: httpconn.cc.s
 httpconn.cc.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/httpconn.cc.s
 .PHONY : httpconn.cc.s
+
+lst_timer.o: lst_timer.cc.o
+.PHONY : lst_timer.o
+
+# target to build an object file
+lst_timer.cc.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/lst_timer.cc.o
+.PHONY : lst_timer.cc.o
+
+lst_timer.i: lst_timer.cc.i
+.PHONY : lst_timer.i
+
+# target to preprocess a source file
+lst_timer.cc.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/lst_timer.cc.i
+.PHONY : lst_timer.cc.i
+
+lst_timer.s: lst_timer.cc.s
+.PHONY : lst_timer.s
+
+# target to generate assembly for a file
+lst_timer.cc.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/lst_timer.cc.s
+.PHONY : lst_timer.cc.s
 
 test.o: test.cc.o
 .PHONY : test.o
@@ -186,6 +234,30 @@ tool.cc.s:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/tool.cc.s
 .PHONY : tool.cc.s
 
+webserver.o: webserver.cpp.o
+.PHONY : webserver.o
+
+# target to build an object file
+webserver.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/webserver.cpp.o
+.PHONY : webserver.cpp.o
+
+webserver.i: webserver.cpp.i
+.PHONY : webserver.i
+
+# target to preprocess a source file
+webserver.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/webserver.cpp.i
+.PHONY : webserver.cpp.i
+
+webserver.s: webserver.cpp.s
+.PHONY : webserver.s
+
+# target to generate assembly for a file
+webserver.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/webserver.cpp.s
+.PHONY : webserver.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -195,15 +267,24 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... TcpServer.o"
+	@echo "... TcpServer.i"
+	@echo "... TcpServer.s"
 	@echo "... httpconn.o"
 	@echo "... httpconn.i"
 	@echo "... httpconn.s"
+	@echo "... lst_timer.o"
+	@echo "... lst_timer.i"
+	@echo "... lst_timer.s"
 	@echo "... test.o"
 	@echo "... test.i"
 	@echo "... test.s"
 	@echo "... tool.o"
 	@echo "... tool.i"
 	@echo "... tool.s"
+	@echo "... webserver.o"
+	@echo "... webserver.i"
+	@echo "... webserver.s"
 .PHONY : help
 
 

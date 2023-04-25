@@ -1,29 +1,18 @@
 #include"httpconn.hpp"
 #include<sys/types.h>
+#include"webserver.hpp"
 #include<sys/socket.h>
 #include<iostream>
 #include<string.h>
 #include<sys/socket.h>   
 #include <sys/stat.h>
-
-
 #include"tool.hpp"                                                               
 //分析url资源
 //判断文件是否存在
 //判断文件是否是一个可执行文件，如果是一个可执行文件，则调用cgi机制
 //判断一个文件是否一个普通文件，则将该文件提前打开，并保存相关文件的fd
 
-void add(int epoll_fd,int sockfd,int shot)
-{
-  epoll_event event;
-  uint32_t events=EPOLLET|EPOLLIN;
-  if(shot){
-    events|=EPOLLONESHOT;
-  }
-  epoll_ctl(epoll_fd, EPOLL_CTL_ADD,sockfd,&event);  
-}
-
-  void  httpconn::AnalyFile(){
+void  httpconn::AnalyFile(){
         std::string path=m_request->m_path;
         m_request->m_path="wwwroot";
         m_request->m_path+=path;
@@ -82,13 +71,14 @@ int httpconn::Read(){
     return false;
   }
   while(true){
-    ssize_t size=recv(socket,(void*)read_buffer[m_read_idx],READ_BUFFER_SIZE-m_read_idx,MSG_DONTWAIT);
+    char str[1024];
+    ssize_t size=recv(m_socket,str,1024,MSG_DONTWAIT);
      if(size==0){
        //对端关闭
        return false;
     }
-    else if(size<0){
-      if(errno&EAGAIN||errno&EWOULDBLOCK){
+     else if(size<0){
+      if(errno==EAGAIN||errno==EWOULDBLOCK){
         //没有数据了
         break;
       }
@@ -96,6 +86,7 @@ int httpconn::Read(){
         return false;
       }
     }
+    read_buffer+=str;
     m_read_idx+=size;
     if(m_read_idx>=READ_BUFFER_SIZE){
       break;
@@ -127,13 +118,27 @@ int httpconn::process(){
   httpconn::HTTP_CODE res=process_read();
    if(res==httpconn::NO_REQUEST){
        //重新将socket设置进epoll对象中
-       add(epoll_fd,socket,true);
+      webserver::GetInstant()->addevent(m_socket,EPOLLIN);
        return 0;
+   }
+
+   if(res==httpconn::BAD_REQUEST){
+    //请求错误，得向客户端发送一个坏请求的页面
+    //并关闭链接,设置一个错误码errno，通知上层
+    return -1;
    }
    //读取完请求后，解析好请求，接下来构建响应
   res=process_write();
+  //将socket设置为写事件
+  webserver::GetInstant()->addevent(m_socket,EPOLLOUT,EPOLL_CTL_MOD,false,true);
   return 0;
 }
+
+
+  void httpconn::setfd(int sockfd)
+  {
+    m_socket=sockfd;
+  }
 
 //解析请求
 httpconn::HTTP_CODE httpconn::process_read(){
@@ -279,7 +284,7 @@ httpconn::HTTP_CODE httpconn::process_read(){
               int begin2=cgi_res.find(": ",end1+1)+2;
               int end2=cgi_res.find("X",begin2);
               std::string page_index=cgi_res.substr(begin2,end2-begin2);
-              m_response->fd=open(page_index.c_str(),O_RDONLY);
+              //m_response->fd=open(page_index.c_str(),O_RDONLY);
               struct stat buf;
               stat(page_index.c_str(),&buf);
               //最终content_size大小为文件
@@ -386,15 +391,15 @@ int httpconn::do_request()
 httpconn::LINE_STATUS httpconn::parse_line(){
   //从缓冲区中读取一行数据
   //遇到\r\n就停止
-  //xxxxxx\n\rxxxxxx\n\r
+  //xxxxxx\r\nxxxxxx\r\n
   //m_check_idx检查缓冲区的位置
   //m_read_idx读取缓冲区的位置
   for( ;m_check_idx<read_buffer.size();m_check_idx++){
-      if(read_buffer[m_check_idx]=='\n'){
+      if(read_buffer[m_check_idx]=='\r'){
         if(m_check_idx+1>=read_buffer.size()){
           return LINE_OPEN;
         }
-        else if(read_buffer[m_check_idx+1]=='\r'){
+        else if(read_buffer[m_check_idx+1]=='\n'){
              //完整行
               read_buffer[m_check_idx++]='\0';
               read_buffer[m_check_idx++]='\0';
@@ -404,7 +409,7 @@ httpconn::LINE_STATUS httpconn::parse_line(){
           return LINE_BAD;
         }
       }
-      else if(m_check_idx>0&&read_buffer[m_check_idx+1]=='\r'){
+      else if(m_check_idx>0&&read_buffer[m_check_idx+1]=='\n'){
            read_buffer[m_check_idx-1]='\0';
            read_buffer[m_check_idx++]='\0';
            return LINE_OK;
@@ -421,10 +426,11 @@ httpconn::HTTP_CODE  httpconn::parse_request_line(std::string text){
     }
     //解析出请求方法
    // cout<<text.substr(0,pos)<<endl;
-    if(text.substr(0,pos)=="get"){
+   string tmp=text.substr(0,pos);
+    if(tmp=="GET"||tmp=="get"){
        m_request->m_method=Request::GET;
     }
-    else if(text.substr(0,pos)=="post"){
+    else if(tmp=="post"||tmp=="POST"){
       m_request->m_method=Request::POST;
     }
     else{
@@ -505,34 +511,32 @@ bool httpconn::Write()
   {
      //发送response_body
      int len=response_body.size()-start;
-     int size=send(socket,response_body.c_str()+start,len,0);
-     if(size==0)
-     {
-          if(size>0){
-            start+=size;
-            if(start==response_body.size())
-              break;
-          }else{
-            //发送失败
-            return false;
-          }
-     }
+     int size=send(m_socket,response_body.c_str()+start,len,0);
+      if(size>0){
+        start+=size;
+        if(start==response_body.size())
+          break;
+      }else{
+        //发送失败
+        return false;
+      }
+
   }
 
   while(true)
   {
     if(IsSendPage)
     {
-        if(m_response->fd!=-1){
+        if(fd!=-1){
          int content_size=m_response->content_size; 
          //std::cout<<"content_size: "<<content_size<<std::endl;
          off_t start=0;
          while(true){
-           int size=sendfile(socket,m_response->fd,&start,content_size);
+           int size=sendfile(m_socket,fd,&start,content_size);
            if(start+size>=content_size){
-             break;
+             return true;
            }
-           if(size<0){
+           if(size<=0){
             //发送失败
             return false;
            }
@@ -548,7 +552,7 @@ bool httpconn::Write()
       while(true)
       {
       int len=response_content.size()-start;
-      int size=send(socket,response_content.c_str()+start,len,0);
+      int size=send(m_socket,response_content.c_str()+start,len,0);
       if(size==0)
       {
           if(size>0){
@@ -563,14 +567,30 @@ bool httpconn::Write()
     }
   }
  }
-  return true;
+return true;
 }
 
 
+void httpconn::clear()
+{
+  if(fd!=-1){
+    close(fd);
+    fd=-1;
+  }
+  init();
+  //delete m_request;
+  //delete m_response;
+}
+
 void httpconn::init()
 {
+  if(fd!=-1){
+    close(fd);
+    fd=-1;
+  }
   m_request->init();
   m_response->init();
+
   m_read_idx=0;
   m_read_start=0;
   m_check_idx=0;
@@ -582,7 +602,7 @@ void httpconn::init()
   file_size=0;
   IsSendPage=false;
   cgi=false;
-
+  
   write_buffer.clear();
   read_buffer.clear();
 }
