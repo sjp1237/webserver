@@ -10,8 +10,8 @@
 #include<pthread.h>
 #include<unistd.h>
 #include<mutex>
-#define EXPIRETIME 1
-#define ALARMTIME 100000
+#define EXPIRETIME 5
+#define ALARMTIME 5
 using std::cout;
 using std::endl;
 

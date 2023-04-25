@@ -137,10 +137,11 @@ void webserver::DealWrite(int sockfd)
   //httpconn调用write，是将响应中的数据一次性发送给对端
   //如果数据发送成功，则将重新将初始化httpconn的数据
   //如果发送失败，则断开连接
-  auto httpconn=m_usrs[sockfd];
+  auto& httpconn=m_usrs[sockfd];
   if(httpconn.Write()){
     //发送成功
     //调整timer_list节点
+    cout<<"发送成功"<<endl;
     if(httpconn.Is_linker()){
       timer_list->adjust_timer(timers[sockfd].timer);
       //清除http中的数据
@@ -267,7 +268,7 @@ void webserver::Run()
     }
     else if(num==0)
     {
-      cout<<"without event"<<endl;
+     // cout<<"without event"<<endl;
     }
     else{
        for(int i=0;i<num;i++)
@@ -279,19 +280,23 @@ void webserver::Run()
           //可能是管道发出的信号
           if(sockfd==m_listenfd){    
             //获取到新链接
+            cout<<"获取新链接"<<endl;
            DealNewlinker();
           }
           else if(sockfd==m_pipe[0]){
             //处理信号，因为IO操作是比较
+            cout<<"处理信号"<<endl;
             DealSig();//
           }
           else{
             //普通链接的读取操作
+            cout<<"处理读事件"<<endl;
             DealRead(sockfd);
           }
          }
          else if(m_events[i].events==EPOLLOUT)
          {
+            cout<<"处理写事件"<<endl;
             DealWrite(sockfd);
          }
          else if(m_events[i].events&(EPOLLERR|EPOLLHUP|EPOLLRDHUP)){
