@@ -1,10 +1,13 @@
 FILE(REMOVE_RECURSE
+  "CMakeFiles/test.dir/FileInfo.cpp.o"
   "CMakeFiles/test.dir/test.cc.o"
   "CMakeFiles/test.dir/httpconn.cc.o"
   "CMakeFiles/test.dir/tool.cc.o"
   "CMakeFiles/test.dir/webserver.cpp.o"
   "CMakeFiles/test.dir/TcpServer.cc.o"
   "CMakeFiles/test.dir/lst_timer.cc.o"
+  "CMakeFiles/test.dir/FileUtil.cpp.o"
+  "CMakeFiles/test.dir/Config.cpp.o"
   "test.pdb"
   "test"
 )

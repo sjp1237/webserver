@@ -114,6 +114,78 @@ test/fast:
 	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
 .PHONY : test/fast
 
+Config.o: Config.cpp.o
+.PHONY : Config.o
+
+# target to build an object file
+Config.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Config.cpp.o
+.PHONY : Config.cpp.o
+
+Config.i: Config.cpp.i
+.PHONY : Config.i
+
+# target to preprocess a source file
+Config.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Config.cpp.i
+.PHONY : Config.cpp.i
+
+Config.s: Config.cpp.s
+.PHONY : Config.s
+
+# target to generate assembly for a file
+Config.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Config.cpp.s
+.PHONY : Config.cpp.s
+
+FileInfo.o: FileInfo.cpp.o
+.PHONY : FileInfo.o
+
+# target to build an object file
+FileInfo.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FileInfo.cpp.o
+.PHONY : FileInfo.cpp.o
+
+FileInfo.i: FileInfo.cpp.i
+.PHONY : FileInfo.i
+
+# target to preprocess a source file
+FileInfo.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FileInfo.cpp.i
+.PHONY : FileInfo.cpp.i
+
+FileInfo.s: FileInfo.cpp.s
+.PHONY : FileInfo.s
+
+# target to generate assembly for a file
+FileInfo.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FileInfo.cpp.s
+.PHONY : FileInfo.cpp.s
+
+FileUtil.o: FileUtil.cpp.o
+.PHONY : FileUtil.o
+
+# target to build an object file
+FileUtil.cpp.o:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FileUtil.cpp.o
+.PHONY : FileUtil.cpp.o
+
+FileUtil.i: FileUtil.cpp.i
+.PHONY : FileUtil.i
+
+# target to preprocess a source file
+FileUtil.cpp.i:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FileUtil.cpp.i
+.PHONY : FileUtil.cpp.i
+
+FileUtil.s: FileUtil.cpp.s
+.PHONY : FileUtil.s
+
+# target to generate assembly for a file
+FileUtil.cpp.s:
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FileUtil.cpp.s
+.PHONY : FileUtil.cpp.s
+
 TcpServer.o: TcpServer.cc.o
 .PHONY : TcpServer.o
 
@@ -267,6 +339,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... Config.o"
+	@echo "... Config.i"
+	@echo "... Config.s"
+	@echo "... FileInfo.o"
+	@echo "... FileInfo.i"
+	@echo "... FileInfo.s"
+	@echo "... FileUtil.o"
+	@echo "... FileUtil.i"
+	@echo "... FileUtil.s"
 	@echo "... TcpServer.o"
 	@echo "... TcpServer.i"
 	@echo "... TcpServer.s"

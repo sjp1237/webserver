@@ -1,0 +1,11 @@
+[
+	{
+		"AccessTime" : 1683720416,
+		"BackPath" : "./wwwroot/backdir/test.txt",
+		"FileSize" : 15,
+		"ModifyTime" : 1683720393,
+		"PackPath" : "./wwwroot/packdir/test.txt.lz",
+		"PackSign" : false,
+		"Url" : "/download/test.txt"
+	}
+]

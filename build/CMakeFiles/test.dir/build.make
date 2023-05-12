@@ -52,9 +52,32 @@ include CMakeFiles/test.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/test.dir/flags.make
 
+CMakeFiles/test.dir/FileInfo.cpp.o: CMakeFiles/test.dir/flags.make
+CMakeFiles/test.dir/FileInfo.cpp.o: ../FileInfo.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_1)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/FileInfo.cpp.o"
+	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/FileInfo.cpp.o -c /home/sjp/webserver/FileInfo.cpp
+
+CMakeFiles/test.dir/FileInfo.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.dir/FileInfo.cpp.i"
+	/opt/rh/devtoolset-7/root/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/sjp/webserver/FileInfo.cpp > CMakeFiles/test.dir/FileInfo.cpp.i
+
+CMakeFiles/test.dir/FileInfo.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/FileInfo.cpp.s"
+	/opt/rh/devtoolset-7/root/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/sjp/webserver/FileInfo.cpp -o CMakeFiles/test.dir/FileInfo.cpp.s
+
+CMakeFiles/test.dir/FileInfo.cpp.o.requires:
+.PHONY : CMakeFiles/test.dir/FileInfo.cpp.o.requires
+
+CMakeFiles/test.dir/FileInfo.cpp.o.provides: CMakeFiles/test.dir/FileInfo.cpp.o.requires
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FileInfo.cpp.o.provides.build
+.PHONY : CMakeFiles/test.dir/FileInfo.cpp.o.provides
+
+CMakeFiles/test.dir/FileInfo.cpp.o.provides.build: CMakeFiles/test.dir/FileInfo.cpp.o
+
 CMakeFiles/test.dir/test.cc.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/test.cc.o: ../test.cc
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_2)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/test.cc.o"
 	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/test.cc.o -c /home/sjp/webserver/test.cc
 
@@ -77,7 +100,7 @@ CMakeFiles/test.dir/test.cc.o.provides.build: CMakeFiles/test.dir/test.cc.o
 
 CMakeFiles/test.dir/httpconn.cc.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/httpconn.cc.o: ../httpconn.cc
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_2)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_3)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/httpconn.cc.o"
 	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/httpconn.cc.o -c /home/sjp/webserver/httpconn.cc
 
@@ -100,7 +123,7 @@ CMakeFiles/test.dir/httpconn.cc.o.provides.build: CMakeFiles/test.dir/httpconn.c
 
 CMakeFiles/test.dir/tool.cc.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/tool.cc.o: ../tool.cc
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_3)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_4)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/tool.cc.o"
 	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/tool.cc.o -c /home/sjp/webserver/tool.cc
 
@@ -123,7 +146,7 @@ CMakeFiles/test.dir/tool.cc.o.provides.build: CMakeFiles/test.dir/tool.cc.o
 
 CMakeFiles/test.dir/webserver.cpp.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/webserver.cpp.o: ../webserver.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_4)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_5)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/webserver.cpp.o"
 	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/webserver.cpp.o -c /home/sjp/webserver/webserver.cpp
 
@@ -146,7 +169,7 @@ CMakeFiles/test.dir/webserver.cpp.o.provides.build: CMakeFiles/test.dir/webserve
 
 CMakeFiles/test.dir/TcpServer.cc.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/TcpServer.cc.o: ../TcpServer.cc
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_5)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_6)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/TcpServer.cc.o"
 	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/TcpServer.cc.o -c /home/sjp/webserver/TcpServer.cc
 
@@ -169,7 +192,7 @@ CMakeFiles/test.dir/TcpServer.cc.o.provides.build: CMakeFiles/test.dir/TcpServer
 
 CMakeFiles/test.dir/lst_timer.cc.o: CMakeFiles/test.dir/flags.make
 CMakeFiles/test.dir/lst_timer.cc.o: ../lst_timer.cc
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_6)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_7)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/lst_timer.cc.o"
 	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/lst_timer.cc.o -c /home/sjp/webserver/lst_timer.cc
 
@@ -190,24 +213,78 @@ CMakeFiles/test.dir/lst_timer.cc.o.provides: CMakeFiles/test.dir/lst_timer.cc.o.
 
 CMakeFiles/test.dir/lst_timer.cc.o.provides.build: CMakeFiles/test.dir/lst_timer.cc.o
 
+CMakeFiles/test.dir/FileUtil.cpp.o: CMakeFiles/test.dir/flags.make
+CMakeFiles/test.dir/FileUtil.cpp.o: ../FileUtil.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_8)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/FileUtil.cpp.o"
+	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/FileUtil.cpp.o -c /home/sjp/webserver/FileUtil.cpp
+
+CMakeFiles/test.dir/FileUtil.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.dir/FileUtil.cpp.i"
+	/opt/rh/devtoolset-7/root/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/sjp/webserver/FileUtil.cpp > CMakeFiles/test.dir/FileUtil.cpp.i
+
+CMakeFiles/test.dir/FileUtil.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/FileUtil.cpp.s"
+	/opt/rh/devtoolset-7/root/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/sjp/webserver/FileUtil.cpp -o CMakeFiles/test.dir/FileUtil.cpp.s
+
+CMakeFiles/test.dir/FileUtil.cpp.o.requires:
+.PHONY : CMakeFiles/test.dir/FileUtil.cpp.o.requires
+
+CMakeFiles/test.dir/FileUtil.cpp.o.provides: CMakeFiles/test.dir/FileUtil.cpp.o.requires
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/FileUtil.cpp.o.provides.build
+.PHONY : CMakeFiles/test.dir/FileUtil.cpp.o.provides
+
+CMakeFiles/test.dir/FileUtil.cpp.o.provides.build: CMakeFiles/test.dir/FileUtil.cpp.o
+
+CMakeFiles/test.dir/Config.cpp.o: CMakeFiles/test.dir/flags.make
+CMakeFiles/test.dir/Config.cpp.o: ../Config.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sjp/webserver/build/CMakeFiles $(CMAKE_PROGRESS_9)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.dir/Config.cpp.o"
+	/opt/rh/devtoolset-7/root/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.dir/Config.cpp.o -c /home/sjp/webserver/Config.cpp
+
+CMakeFiles/test.dir/Config.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.dir/Config.cpp.i"
+	/opt/rh/devtoolset-7/root/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/sjp/webserver/Config.cpp > CMakeFiles/test.dir/Config.cpp.i
+
+CMakeFiles/test.dir/Config.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.dir/Config.cpp.s"
+	/opt/rh/devtoolset-7/root/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/sjp/webserver/Config.cpp -o CMakeFiles/test.dir/Config.cpp.s
+
+CMakeFiles/test.dir/Config.cpp.o.requires:
+.PHONY : CMakeFiles/test.dir/Config.cpp.o.requires
+
+CMakeFiles/test.dir/Config.cpp.o.provides: CMakeFiles/test.dir/Config.cpp.o.requires
+	$(MAKE) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/Config.cpp.o.provides.build
+.PHONY : CMakeFiles/test.dir/Config.cpp.o.provides
+
+CMakeFiles/test.dir/Config.cpp.o.provides.build: CMakeFiles/test.dir/Config.cpp.o
+
 # Object files for target test
 test_OBJECTS = \
+"CMakeFiles/test.dir/FileInfo.cpp.o" \
 "CMakeFiles/test.dir/test.cc.o" \
 "CMakeFiles/test.dir/httpconn.cc.o" \
 "CMakeFiles/test.dir/tool.cc.o" \
 "CMakeFiles/test.dir/webserver.cpp.o" \
 "CMakeFiles/test.dir/TcpServer.cc.o" \
-"CMakeFiles/test.dir/lst_timer.cc.o"
+"CMakeFiles/test.dir/lst_timer.cc.o" \
+"CMakeFiles/test.dir/FileUtil.cpp.o" \
+"CMakeFiles/test.dir/Config.cpp.o"
 
 # External object files for target test
-test_EXTERNAL_OBJECTS =
+test_EXTERNAL_OBJECTS = \
+"/home/sjp/webserver/bundle.o"
 
+test: CMakeFiles/test.dir/FileInfo.cpp.o
 test: CMakeFiles/test.dir/test.cc.o
 test: CMakeFiles/test.dir/httpconn.cc.o
 test: CMakeFiles/test.dir/tool.cc.o
 test: CMakeFiles/test.dir/webserver.cpp.o
 test: CMakeFiles/test.dir/TcpServer.cc.o
 test: CMakeFiles/test.dir/lst_timer.cc.o
+test: CMakeFiles/test.dir/FileUtil.cpp.o
+test: CMakeFiles/test.dir/Config.cpp.o
+test: ../bundle.o
 test: CMakeFiles/test.dir/build.make
 test: CMakeFiles/test.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable test"
@@ -217,12 +294,15 @@ test: CMakeFiles/test.dir/link.txt
 CMakeFiles/test.dir/build: test
 .PHONY : CMakeFiles/test.dir/build
 
+CMakeFiles/test.dir/requires: CMakeFiles/test.dir/FileInfo.cpp.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/test.cc.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/httpconn.cc.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/tool.cc.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/webserver.cpp.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/TcpServer.cc.o.requires
 CMakeFiles/test.dir/requires: CMakeFiles/test.dir/lst_timer.cc.o.requires
+CMakeFiles/test.dir/requires: CMakeFiles/test.dir/FileUtil.cpp.o.requires
+CMakeFiles/test.dir/requires: CMakeFiles/test.dir/Config.cpp.o.requires
 .PHONY : CMakeFiles/test.dir/requires
 
 CMakeFiles/test.dir/clean:
