@@ -4,22 +4,44 @@
 #include<sys/socket.h>
 #include<iostream>
 #include<string.h>
+#include<string>
 #include<sys/socket.h>   
 #include <sys/stat.h>
-#include"tool.hpp"                                                               
+#include<ctime>
+#include"tool.hpp"         
+#include"FileUtil.hpp"          
+#include"FileInfo.hpp"           
+
+
+  static std::string mtimeToString(time_t mtime){
+        std::string res= ctime(&mtime);
+        return res;
+  }
 //分析url资源
 //判断文件是否存在
 //判断文件是否是一个可执行文件，如果是一个可执行文件，则调用cgi机制
 //判断一个文件是否一个普通文件，则将该文件提前打开，并保存相关文件的fd
+
+static  std::string GetEtag(std::string filename){
+      sjp::FileUtil fu(filename);
+      std::string etag=fu.GetFilename();
+      etag+="-";
+      etag+=std::to_string(fu.GetFileSize());
+      etag+="-";
+      etag+=std::to_string(fu.GetFileModfityTime());
+      return etag;
+  }
+
 
 void  httpconn::AnalyFile(){
         std::string path=m_request->m_path;
         m_request->m_path="wwwroot";
         m_request->m_path+=path;
         //添加wwwroot前缀
-        if(m_request->m_path[m_request->m_path.size()-1]=='/'){
+        if(m_request->m_path[m_request->m_path.size()-1]=='/'){   
           m_request->m_path+=HOME_PAGE;
           IsSendPage=true;
+        //  cout<<"[AnalyFile]: m_request->m_path"<<endl;
         }
 
         struct stat buf;
@@ -128,6 +150,10 @@ int httpconn::process(){
     return -1;
    }
    //读取完请求后，解析好请求，接下来构建响应
+  if(showList){
+    webserver::GetInstant()->addevent(m_socket,EPOLLOUT,EPOLL_CTL_MOD,false,true);
+    return 0;
+  }
   res=process_write();
   //将socket设置为写事件
   webserver::GetInstant()->addevent(m_socket,EPOLLOUT,EPOLL_CTL_MOD,false,true);
@@ -301,10 +327,11 @@ httpconn::HTTP_CODE httpconn::process_read(){
         }      
  }
 
-
+//get /test.txt/download
 bool httpconn::AnalyUri(){
    //将url中的路径和参数给区分开来
     std::string& uri=m_request->m_url;
+  //  cout<<"uri: "<<uri<<endl;
     //不管是Get方法还是Post方法,只要没找到"?", 则说明uri中一定没有参数
     if(uri.find("?")!=-1){
     //说明uri中带参数
@@ -312,8 +339,25 @@ bool httpconn::AnalyUri(){
     Tool::CuttingString(uri,m_request->m_path,m_request->m_parameter,seq);
     }else{
       //没有找到?,说明uri只有路径
-       m_request->m_path=uri;    
+       m_request->m_path=uri;      
     }
+
+    int pos=m_request->m_path.rfind("/");
+    string s=m_request->m_path.substr(pos+1);
+    cout<<"s："<<s<<endl;
+    if(s=="download"){
+      //去掉download
+      m_request->m_path=m_request->m_path.substr(0,pos);
+      //设置文件
+      pos=m_request->m_path.rfind("/");
+      fileName=m_request->m_path.substr(pos+1);
+      downFile=true;
+    }
+    else if(s=="ListShow"){
+      cout<<"list show"<<endl;
+      showList=true;
+    }
+  //  cout<<"m_request->m_path: "<<m_request->m_path<<endl;
 }
 
 void httpconn::OpenPage()
@@ -321,10 +365,48 @@ void httpconn::OpenPage()
   fd=open(m_request->m_path.c_str(),O_RDONLY);
   if(fd<0){
     //打开失败
-    
+    //cout<<"m_request->m_path: "<<m_request->m_path<<endl;
+   // cout<<"fd == -1"<<endl;
   }
 }
 
+
+void httpconn::ShowList()
+ {
+    cout<<"listshow start"<<endl;    
+    std::vector<FileInfo> arry;    
+    FileInfoManger::GetInstant()->GetAllInfo(arry);    
+    std::stringstream ss;    
+
+
+    ss<<"<!DOCTYPE html>"<<"<html><meta charset=\"UTF-8\"><head><title>Download</title></head><body><h1>Download</h1><table>";      
+                  ss<<"<tr><td><h3>文件名</h3></a></td>";        
+    ss<<"<td align=\"left\">"<<"<h3>最近修改时间</h3>"<<"</td>";                                                 
+    ss<<"<td align=\"right\">"<<"<h3>文件大小</h3>"<<"</td></tr>";     
+    for(int i=0;i<arry.size();i++){    
+      //>    
+      /*<td><a href="/download/test.txt">test.txt</a></td>    
+        <td align="right">2021-12-29 10:10:10</td>    
+        <td align="right">28k</td>    
+        * */    
+      std::string path=arry[i].back_path;    
+      sjp::FileUtil fu(path);    
+      std::string atimestr=mtimeToString(arry[i].modify_time);    
+      ss<<"<tr><td><a href=\"/download/"<<fu.GetFilename()<<"\">"<<fu.GetFilename()<<"</a></td>";    
+      ss<<"<td align=\"right\">"<<atimestr<<"    </td>";    
+      ss<<"<td align=\"right\">"<<arry[i].file_size/1024<<"k"<<"</td></tr>";                                                                                                          
+    }    
+    ss<<"</table></body></html>";
+    ss<<"<form action=\"http://119.23.41.13:8081/upload\" method=\"post\" enctype=\"multipart/form-data\"><div><input type=\"file\" name=\"file\"></div><div><input type=\"submit\" va  lue=\"上传\"></div></form>";
+    m_response->response_content=ss.str();
+
+   m_response->response_body="http/1.1 200 OK";
+    m_response->response_body+="Content-Type: index/html\r\n";
+   m_response->response_body+="Content-Len: ";
+   m_response->response_body+=to_string(m_response->response_content.size());
+   m_response->response_body+=BLANK;
+   
+}
 
 int httpconn::do_request()
 {
@@ -334,6 +416,9 @@ int httpconn::do_request()
   //判断文件是否存在
   //判断文件是否是一个可执行文件，如果是一个可执行文件，则调用cgi机制
   //判断一个文件是否一个普通文件，则将该文件提前打开，并返回相关文件的fd
+  if(showList){
+    return 0;//返回下载网页
+  }
   AnalyFile();
   if(cgi)
   {
@@ -359,11 +444,29 @@ int httpconn::do_request()
 
     //构建请求报头
     void httpconn::BuildResponseHeaer(){
-        //构建Content-Type:        
-        std::string content_type="Content-Type: ";
-        content_type+=suffix_type[m_response->suffix];
-        content_type+=BLANK;
-        m_response->response_body+=content_type;
+       //构建Content-Type: 
+       //std::string content_type;
+       if(downFile)
+        {
+          cout<<"download"<<endl;
+          m_response->response_body+="Content-Type: application/octet-stream";   
+          m_response->response_body+=BLANK;
+          m_response->response_body+="Content-Disposition: attachment; filename=";
+          m_response->response_body+=fileName;
+          m_response->response_body+=BLANK;
+          m_response->response_body+="Accept-Ranges: bytes";
+          m_response->response_body+=BLANK;
+          m_response->response_body+="Etag: ";
+          m_response->response_body+=GetEtag(m_request->m_path);
+          //cout<<m_response->response_body<<endl;
+          m_response->response_body+=BLANK;       
+        }
+        else{
+          m_response->response_body="Content-Type: ";
+          m_response->response_body+=suffix_type[m_response->suffix];
+          m_response->response_body+=BLANK;
+        }
+        //m_response->response_body+=content_type;
         //构建Content-Length
         //非cgi的响应正文是文件的大小
         //cgi处理的响应正文是cgi程序处理的结果
@@ -384,7 +487,9 @@ int httpconn::do_request()
         connection+=BLANK;
         m_response->response_body+=connection;
         m_response->response_body+=BLANK;
-  }
+        m_response->response_body+=BLANK;
+        cout<<m_response->response_body<<endl;
+    }
 
 //测试成功
 //测试用例：abcdef abcdef\r\n abcdef\r
@@ -504,6 +609,10 @@ bool httpconn::Write()
 {
   //先发送response_body后，
   //判断响应正文是发送静态网页还是发送response_content
+  if(showList){
+    ShowList();
+    return true;
+  }
   int start=0;
   auto& response_body=m_response->response_body;
   //发送响应报头完成
@@ -522,18 +631,24 @@ bool httpconn::Write()
       }
 
   }
-
+  cout<<"发送响应报头成功"<<endl;
   while(true)
   {
     if(IsSendPage)
     {
+        //cout<<fd<<endl;
+        //fd == -1
         if(fd!=-1){
          int content_size=m_response->content_size; 
          //std::cout<<"content_size: "<<content_size<<std::endl;
          off_t start=0;
          while(true){
+          cout<<"m_socket: "<<m_socket<<endl;
+          cout<<"fd: "<<fd<<endl;
+
            int size=sendfile(m_socket,fd,&start,content_size);
            if(start+size>=content_size){
+             cout<<"发送响应正文成功"<<endl;
              return true;
            }
            if(size<=0){
@@ -602,7 +717,8 @@ void httpconn::init()
   file_size=0;
   IsSendPage=false;
   cgi=false;
-  
+  showList=false;
+  downFile=false;
   write_buffer.clear();
   read_buffer.clear();
 }

@@ -156,6 +156,7 @@ public:
     void init();
     void setfd(int sockfd);
     void clear();
+    void ShowList();
     bool Is_linker(){
       return m_linger;
     }
@@ -177,7 +178,6 @@ private:
     //do_request中的cgihandle没有测试完成，其余的测试好了
     int  do_request();
     void OpenPage();
-
   private:
     //未测试
     bool CgiHandle();
@@ -212,5 +212,9 @@ private:
     bool cgi=false;
     int epoll_fd;
     int fd=-1; //打开的文件描述符
+    string fileName;
+    bool downFile=false;//判断是否下载文件
     //webserver* server;
+
+    bool showList=false;//展示下载页面
 };

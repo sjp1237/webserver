@@ -10,6 +10,7 @@
 #include<pthread.h>
 #include<unistd.h>
 #include<mutex>
+#include"Config.hpp"
 #define EXPIRETIME 5
 #define ALARMTIME 5
 using std::cout;
@@ -90,11 +91,7 @@ public:
     httpconn* m_usrs;
     client_data* timers;
 
+    int listenCount=0;
     sort_timer_list* timer_list;
     Util m_utils;
 };
-
-
-
-
-

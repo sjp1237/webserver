@@ -1,0 +1,10 @@
+{
+"Ip":"119.23.41.13",
+"ServerPort" :8081 ,
+"HotTime" :30,
+"PackDir":" . /wwwroot/packdir/",
+"Bac kDir":"./wwwroot/backdir/",
+"BackFileInfo":". /backfileinfo",
+"PackFileSuffix":". lz",
+"UrlPrefix":" /down Load/" 
+}

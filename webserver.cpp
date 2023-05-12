@@ -155,6 +155,7 @@ void webserver::DealWrite(int sockfd)
       httpconn.clear();
       timer_list->del_timer(timers[sockfd].timer);//删除定时链表中的节点
       del(sockfd);//关闭连接，清除epoll上的节点
+      listenCount--;
     }
 
   }else{
@@ -163,6 +164,7 @@ void webserver::DealWrite(int sockfd)
     httpconn.clear();
     del(sockfd);//关闭连接，清除epoll上的节点
     timer_list->del_timer(timers[sockfd].timer);//删除定时链表中的节点
+    listenCount--;
   }
 }
 
@@ -205,9 +207,12 @@ void webserver::DealAlarm()
 
 void webserver::DealNewlinker()
 {
-   struct sockaddr peer; 
+   struct sockaddr_in peer; 
    socklen_t len;
-   int fd=accept(m_listenfd,&peer,&len);  
+   int fd=accept(m_listenfd,(struct sockaddr*)&peer,&len);  
+   
+   cout<<inet_ntoa(peer.sin_addr)<<peer.sin_port<<endl;
+   listenCount++;
     //并将链接放进lst_timer
    add_timer(fd);
    m_usrs[fd].setfd(fd);
@@ -261,6 +266,7 @@ void webserver::Run()
   alarm(ALARMTIME);
   while(!stop_server)
   {
+    
     int num=epoll_wait(m_epollfd,m_events,MAX_FD,0);
     if(num<0)
     {
@@ -281,7 +287,8 @@ void webserver::Run()
           if(sockfd==m_listenfd){    
             //获取到新链接
             cout<<"获取新链接"<<endl;
-           DealNewlinker();
+            cout<<listenCount<<endl;
+            DealNewlinker();
           }
           else if(sockfd==m_pipe[0]){
             //处理信号，因为IO操作是比较
