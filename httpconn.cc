@@ -151,6 +151,7 @@ int httpconn::process(){
    }
    //读取完请求后，解析好请求，接下来构建响应
   if(showList){
+    cout<<"showlist: 设置写文件描述符"<<endl;
     webserver::GetInstant()->addevent(m_socket,EPOLLOUT,EPOLL_CTL_MOD,false,true);
     return 0;
   }
@@ -354,7 +355,7 @@ bool httpconn::AnalyUri(){
       downFile=true;
     }
     else if(s=="ListShow"){
-      cout<<"list show"<<endl;
+    //  cout<<"list show"<<endl;
       showList=true;
     }
   //  cout<<"m_request->m_path: "<<m_request->m_path<<endl;
@@ -400,12 +401,16 @@ void httpconn::ShowList()
     ss<<"<form action=\"http://119.23.41.13:8081/upload\" method=\"post\" enctype=\"multipart/form-data\"><div><input type=\"file\" name=\"file\"></div><div><input type=\"submit\" va  lue=\"上传\"></div></form>";
     m_response->response_content=ss.str();
 
-   m_response->response_body="http/1.1 200 OK";
-    m_response->response_body+="Content-Type: index/html\r\n";
-   m_response->response_body+="Content-Len: ";
+   m_response->response_body="http/1.1 200 OK\r\n";
+    m_response->response_body+="Content-Type: text/html\r\n";
+   m_response->response_body+="Content-Length: ";
    m_response->response_body+=to_string(m_response->response_content.size());
    m_response->response_body+=BLANK;
-   
+   m_response->response_body+=BLANK;
+
+
+   cout<<m_response->response_body<<endl;
+   cout<<m_response->response_content<<endl;
 }
 
 int httpconn::do_request()
@@ -604,16 +609,10 @@ httpconn::HTTP_CODE httpconn::parse_request_content()
     }
 }
 
-//生成请求报头
-bool httpconn::Write()
+
+void httpconn::SendResponseHeader()
 {
-  //先发送response_body后，
-  //判断响应正文是发送静态网页还是发送response_content
-  if(showList){
-    ShowList();
-    return true;
-  }
-  int start=0;
+   int start=0;
   auto& response_body=m_response->response_body;
   //发送响应报头完成
   while(true)
@@ -627,61 +626,71 @@ bool httpconn::Write()
           break;
       }else{
         //发送失败
-        return false;
+        return;
       }
-
   }
-  cout<<"发送响应报头成功"<<endl;
-  while(true)
-  {
-    if(IsSendPage)
+}
+void httpconn::SendResponseContent()
+{
+  int content_size=m_response->content_size; 
+  //std::cout<<"content_size: "<<content_size<<std::endl;
+  off_t start=0;
+  while(true){
+  cout<<"m_socket: "<<m_socket<<endl;
+  cout<<"fd: "<<fd<<endl;
+    int size=sendfile(m_socket,fd,&start,content_size);
+    if(start+size>=content_size){
+      cout<<"发送响应正文成功"<<endl;
+      return ;
+    }
+    if(size<=0){
+    //发送失败
+    return ;
+    }
+  }          
+}
+
+//生成请求报头
+bool httpconn::Write()
+{
+  //先发送response_body后，
+  //判断响应正文是发送静态网页还是发送response_content
+  if(showList){
+    ShowList();
+  //  return true;
+  }
+ SendResponseHeader();
+cout<<"发送响应报头成功"<<endl;
+
+  if(IsSendPage)
     {
         //cout<<fd<<endl;
         //fd == -1
         if(fd!=-1){
-         int content_size=m_response->content_size; 
-         //std::cout<<"content_size: "<<content_size<<std::endl;
-         off_t start=0;
-         while(true){
-          cout<<"m_socket: "<<m_socket<<endl;
-          cout<<"fd: "<<fd<<endl;
-
-           int size=sendfile(m_socket,fd,&start,content_size);
-           if(start+size>=content_size){
-             cout<<"发送响应正文成功"<<endl;
-             return true;
-           }
-           if(size<=0){
-            //发送失败
-            return false;
-           }
-         }          
+         SendResponseContent();
         //LOG(INFO,"send page success! ");
        }
     }
-    else if(cgi)
+    else if(cgi||showList)
     {
       //发送cgi处理结果
-      start=0;
+      int start=0;
       auto& response_content=m_response->response_content;
       while(true)
       {
       int len=response_content.size()-start;
       int size=send(m_socket,response_content.c_str()+start,len,0);
-      if(size==0)
-      {
-          if(size>0){
-            start+=size;
-            if(start==response_content.size())
-              break;
-          }else{
+      if(size>0){
+          start+=size;
+          if(start==response_content.size())
+            break;
+      }else{
             //发送失败
-            return false;
-          }
+          return false;
       }
     }
   }
- }
+  cout<<"发送响应正文成功"<<endl;
 return true;
 }
 

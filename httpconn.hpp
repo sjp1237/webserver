@@ -160,6 +160,7 @@ public:
     bool Is_linker(){
       return m_linger;
     }
+
 private:
     //从读缓冲区中读取一行数据
     LINE_STATUS parse_line();
@@ -194,7 +195,8 @@ private:
   private:
     void BuildReponseLine();
     void BuildResponseHeaer();   
-  
+    void SendResponseHeader();
+    void SendResponseContent();
   private:
     std::string write_buffer;
     size_t m_read_idx;//保存read_buffer指向的位置
