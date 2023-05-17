@@ -71,6 +71,7 @@ static std::unordered_map<std::string,std::string> code_desc{
       int m_content_len;   //请求正文的大小
       int m_content_pos; //读取请求正文的下标
       std::string content; //请求正文
+      std::string content_type;
      // std::vector<std::string> request_header;
       //存储响应报头
     //  std::unordered_map<std::string,std::string> header_map;              
@@ -103,7 +104,6 @@ static std::unordered_map<std::string,std::string> code_desc{
       ~Response(){          
       }    
   };    
-
 
 class httpconn{
     static const int FILENAME_LEN = 200;
@@ -222,15 +222,12 @@ private:
     bool IsSendPage=false;
     bool cgi=false;
     int epoll_fd;
-    int fd=-1; //打开的文件描述符
- 
+    int fd=-1; //打开的文件描述符 
     bool downFile=false;//判断是否下载文件
     //webserver* server;
-
     string fileName;//下载的文件名，上传的文件名
     string file_content;//上次的文件文本内容
     bool showList=false;//展示下载页面
-
     bool m_upload=false;
     Option m_op;
 };

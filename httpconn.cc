@@ -206,6 +206,7 @@ httpconn::HTTP_CODE httpconn::process_read(){
       case httpconn::CHECK_STATE_CONTENT:
         //将正文请求正文的数据读取上来
         ret=parse_request_content();
+     // cout<<m_request->content<<endl;
         if(httpconn::GET_REQUEST==ret){
           do_request();
           return GET_REQUEST;
@@ -347,7 +348,7 @@ bool httpconn::AnalyUri(){
 
     int pos=m_request->m_path.rfind("/");
     string s=m_request->m_path.substr(pos+1);
-    cout<<"s："<<s<<endl;
+   // cout<<"s："<<s<<endl;
     if(s=="download"){
       //去掉download
       m_request->m_path=m_request->m_path.substr(0,pos);
@@ -385,7 +386,6 @@ void httpconn::ShowList()
     FileInfoManger::GetInstant()->GetAllInfo(arry);    
     std::stringstream ss;    
 
-
     ss<<"<!DOCTYPE html>"<<"<html><meta charset=\"UTF-8\"><head><title>Download</title></head><body><h1>Download</h1><table>";      
                   ss<<"<tr><td><h3>文件名</h3></a></td>";        
     ss<<"<td align=\"left\">"<<"<h3>最近修改时间</h3>"<<"</td>";                                                 
@@ -408,7 +408,7 @@ void httpconn::ShowList()
     m_response->response_content=ss.str();
 
    m_response->response_body="http/1.1 200 OK\r\n";
-  m_response->response_body+="Content-Type: text/html\r\n";
+   m_response->response_body+="Content-Type: text/html\r\n";
    m_response->response_body+="Content-Length: ";
    m_response->response_body+=to_string(m_response->response_content.size());
    m_response->response_body+=BLANK;
@@ -437,8 +437,8 @@ void httpconn::UpLoad()
     FileInfo fileinfo(filepath);
     FileInfoManger::GetInstant()->Insert(fileinfo);  
     FileInfoManger::GetInstant()->Storage();
-    cout<<filepath<<endl;
-    cout<<file_content<<endl;
+ //   cout<<filepath<<endl;
+  //  cout<<file_content<<endl;
     // ListShow(req,rep);
 }
 
@@ -472,14 +472,14 @@ int httpconn::do_request()
   }
 }
 
-  void httpconn::BuildReponseLine(){
+void httpconn::BuildReponseLine(){
         //构建响应行,版本 状态码 状态码描述
-        m_response->response_body+="HTTP/1.0";
-        m_response->response_body+=" ";
-        m_response->response_body+=m_response->code;
-        m_response->response_body+=" ";
-        m_response->response_body+=code_desc[m_response->code];
-        m_response->response_body+=BLANK;
+      m_response->response_body+="HTTP/1.0";
+      m_response->response_body+=" ";
+      m_response->response_body+=m_response->code;
+      m_response->response_body+=" ";
+      m_response->response_body+=code_desc[m_response->code];
+      m_response->response_body+=BLANK;
         //std::cout<<response.response_line<<std::endl;
   }
 
@@ -490,6 +490,7 @@ int httpconn::do_request()
        //std::string content_type;
        if(downFile)
         {
+         
           cout<<"download"<<endl;
           m_response->response_body+="Content-Type: application/octet-stream";   
           m_response->response_body+=BLANK;
@@ -630,6 +631,11 @@ httpconn::HTTP_CODE  httpconn::parse_request_line(std::string text){
         m_request->m_host =text.substr(pos+2);
         return NO_REQUEST;
     }
+
+    if(text.substr(0,pos)=="Content-Type"){
+      m_request->content_type=text.substr(pos+2);
+      
+    }
     return NO_REQUEST;
 }
 
@@ -645,7 +651,6 @@ httpconn::HTTP_CODE httpconn::parse_request_content()
       return GET_REQUEST;
     }
 }
-
 
 void httpconn::SendResponseHeader()
 {
@@ -673,8 +678,8 @@ void httpconn::SendResponseContent()
   //std::cout<<"content_size: "<<content_size<<std::endl;
   off_t start=0;
   while(true){
-  cout<<"m_socket: "<<m_socket<<endl;
-  cout<<"fd: "<<fd<<endl;
+  //cout<<"m_socket: "<<m_socket<<endl;
+ // cout<<"fd: "<<fd<<endl;
     int size=sendfile(m_socket,fd,&start,content_size);
     if(start+size>=content_size){
       cout<<"发送响应正文成功"<<endl;
@@ -751,7 +756,7 @@ void httpconn::init()
   }
   m_request->init();
   m_response->init();
-
+  
   m_read_idx=0;
   m_read_start=0;
   m_check_idx=0;
@@ -769,20 +774,44 @@ void httpconn::init()
   read_buffer.clear();
 }
 
+//解析http上传文件
+/*
+------WebKitFormBoundaryAhWTT8nb3TdW3yMj
+Content-Disposition: form-data; name="file"; filename="111.txt"
+Content-Type: text/plain
 
-//解析文件名
+111111111
+------WebKitFormBoundaryAhWTT8nb3TdW3yMj--
+*/
 void httpconn::ParseUpLoadFile()
 {
+  auto& content_type=m_request->content_type;
+  int pos=content_type.find("boundary");
+  if(pos==-1){
+    cout<<"no boundary"<<endl;
+    return;
+  }
+
+  string boundry=content_type.substr(pos+9);
   auto& content=m_request->content;
-  int pos=content.find("filename");
+  //cout<<content<<endl;
+  pos=content.find("filename");
   if(pos!=-1){
     int pos1=content.find('"',pos+10);
     fileName=content.substr(pos+10,pos1-pos-10);
   }
-
+  //pos2+4是文件内容的起始位置
+  //pos3是文件边界的起始位置
+  //111111111\r\n------WebKitFormBoundaryAhWTT8nb3TdW3yMj--
+  //pos3-pos2-4是111111111\r\n的字符个数
+  //pos3-pos2-6是111111111的字符个数
   int pos2=content.find("\r\n\r\n");
   if(pos2!=-1){
-    int pos3=content.find("\r\n",pos2+4);
-    file_content=content.substr(pos2+4,pos3-pos-4);
+    int pos3=content.find(boundry,pos2+4);
+    file_content=content.substr(pos2+4,pos3-pos2-6);
   }
+
+  // cout<<"------------"<<endl;
+  // cout<<file_content<<endl;
+  // cout<<"------------"<<endl;
 }
