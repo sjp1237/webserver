@@ -144,6 +144,14 @@ class httpconn{
         LINE_BAD,     //报文语法有误
         LINE_OPEN     //读取的行不完整
     };
+
+    enum Option{
+      UPLOAD=0, //上传请求
+      DOWNLOAD, //下载请求
+      WEBPAGE,  //网页请求
+      CGI,      //CGI请求
+      SHOWLIST //显示下载网页
+    };
     
 public:
     int Read();//将缓冲区中的数据读取到read_buffer中
@@ -160,7 +168,6 @@ public:
     bool Is_linker(){
       return m_linger;
     }
-
 private:
     //从读缓冲区中读取一行数据
     LINE_STATUS parse_line();
@@ -175,6 +182,8 @@ private:
     HTTP_CODE parse_request_header(std::string text);
     //解析请求正文
     HTTP_CODE parse_request_content();
+    void ParseUpLoadFile();
+    void UpLoad();
     //解析文件
     //do_request中的cgihandle没有测试完成，其余的测试好了
     int  do_request();
@@ -189,8 +198,8 @@ private:
     HTTP_CODE parse_request_line(std::string text); 
     HTTP_CODE process_read();
   private:
-    Request* m_request;
     Response* m_response;
+    Request* m_request;
     std::string read_buffer;
   private:
     void BuildReponseLine();
@@ -214,9 +223,14 @@ private:
     bool cgi=false;
     int epoll_fd;
     int fd=-1; //打开的文件描述符
-    string fileName;
+ 
     bool downFile=false;//判断是否下载文件
     //webserver* server;
 
+    string fileName;//下载的文件名，上传的文件名
+    string file_content;//上次的文件文本内容
     bool showList=false;//展示下载页面
+
+    bool m_upload=false;
+    Option m_op;
 };

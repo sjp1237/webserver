@@ -150,8 +150,8 @@ int httpconn::process(){
     return -1;
    }
    //读取完请求后，解析好请求，接下来构建响应
-  if(showList){
-    cout<<"showlist: 设置写文件描述符"<<endl;
+  if(showList||m_upload){
+    //cout<<"showlist: 设置写文件描述符"<<endl;
     webserver::GetInstant()->addevent(m_socket,EPOLLOUT,EPOLL_CTL_MOD,false,true);
     return 0;
   }
@@ -162,10 +162,10 @@ int httpconn::process(){
 }
 
 
-  void httpconn::setfd(int sockfd)
-  {
-    m_socket=sockfd;
-  }
+void httpconn::setfd(int sockfd)
+{
+  m_socket=sockfd;
+}
 
 //解析请求
 httpconn::HTTP_CODE httpconn::process_read(){
@@ -329,6 +329,7 @@ httpconn::HTTP_CODE httpconn::process_read(){
  }
 
 //get /test.txt/download
+//post /updown
 bool httpconn::AnalyUri(){
    //将url中的路径和参数给区分开来
     std::string& uri=m_request->m_url;
@@ -343,13 +344,14 @@ bool httpconn::AnalyUri(){
        m_request->m_path=uri;      
     }
 
+
     int pos=m_request->m_path.rfind("/");
     string s=m_request->m_path.substr(pos+1);
     cout<<"s："<<s<<endl;
     if(s=="download"){
       //去掉download
       m_request->m_path=m_request->m_path.substr(0,pos);
-      //设置文件
+      //设置下载的文件名
       pos=m_request->m_path.rfind("/");
       fileName=m_request->m_path.substr(pos+1);
       downFile=true;
@@ -357,6 +359,10 @@ bool httpconn::AnalyUri(){
     else if(s=="ListShow"){
     //  cout<<"list show"<<endl;
       showList=true;
+    }
+    else if(s=="upload")
+    {
+      m_upload=true;
     }
   //  cout<<"m_request->m_path: "<<m_request->m_path<<endl;
 }
@@ -402,15 +408,38 @@ void httpconn::ShowList()
     m_response->response_content=ss.str();
 
    m_response->response_body="http/1.1 200 OK\r\n";
-    m_response->response_body+="Content-Type: text/html\r\n";
+  m_response->response_body+="Content-Type: text/html\r\n";
    m_response->response_body+="Content-Length: ";
    m_response->response_body+=to_string(m_response->response_content.size());
    m_response->response_body+=BLANK;
    m_response->response_body+=BLANK;
 
 
-   cout<<m_response->response_body<<endl;
-   cout<<m_response->response_content<<endl;
+   //cout<<m_response->response_body<<endl;
+  // cout<<m_response->response_content<<endl;
+}
+
+void httpconn::UpLoad()
+{
+    /* 1.判断是否有文件上传
+      * 2.如果有，则获取该文件的名称和内容
+      * 3.在backdir中创建一个文件
+      * 4.将文件信息存储到FileInfoManger中
+      * */
+    //判断是否有文件上传
+    std::cout<<"upload begin"<<endl;
+    //设置文件路径
+    std::string filepath=Config::GetInstant()->GetBackDir()+fileName;
+    std::string body=file_content;
+
+    sjp::FileUtil fu(filepath);
+    fu.SetContent(body);
+    FileInfo fileinfo(filepath);
+    FileInfoManger::GetInstant()->Insert(fileinfo);  
+    FileInfoManger::GetInstant()->Storage();
+    cout<<filepath<<endl;
+    cout<<file_content<<endl;
+    // ListShow(req,rep);
 }
 
 int httpconn::do_request()
@@ -421,6 +450,14 @@ int httpconn::do_request()
   //判断文件是否存在
   //判断文件是否是一个可执行文件，如果是一个可执行文件，则调用cgi机制
   //判断一个文件是否一个普通文件，则将该文件提前打开，并返回相关文件的fd
+  if(m_upload)
+  {
+    //解析post请求中的文件名和文件内容
+    ParseUpLoadFile();
+    //将文件上传到
+    UpLoad();
+    return 0;
+  }
   if(showList){
     return 0;//返回下载网页
   }
@@ -655,12 +692,12 @@ bool httpconn::Write()
 {
   //先发送response_body后，
   //判断响应正文是发送静态网页还是发送response_content
-  if(showList){
+  if(showList||m_upload){
     ShowList();
   //  return true;
   }
  SendResponseHeader();
-cout<<"发送响应报头成功"<<endl;
+ cout<<"发送响应报头成功"<<endl;
 
   if(IsSendPage)
     {
@@ -671,7 +708,7 @@ cout<<"发送响应报头成功"<<endl;
         //LOG(INFO,"send page success! ");
        }
     }
-    else if(cgi||showList)
+    else if(cgi||showList||m_upload)
     {
       //发送cgi处理结果
       int start=0;
@@ -691,7 +728,7 @@ cout<<"发送响应报头成功"<<endl;
     }
   }
   cout<<"发送响应正文成功"<<endl;
-return true;
+  return true;
 }
 
 
@@ -730,4 +767,22 @@ void httpconn::init()
   downFile=false;
   write_buffer.clear();
   read_buffer.clear();
+}
+
+
+//解析文件名
+void httpconn::ParseUpLoadFile()
+{
+  auto& content=m_request->content;
+  int pos=content.find("filename");
+  if(pos!=-1){
+    int pos1=content.find('"',pos+10);
+    fileName=content.substr(pos+10,pos1-pos-10);
+  }
+
+  int pos2=content.find("\r\n\r\n");
+  if(pos2!=-1){
+    int pos3=content.find("\r\n",pos2+4);
+    file_content=content.substr(pos2+4,pos3-pos-4);
+  }
 }

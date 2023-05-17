@@ -173,6 +173,15 @@ void test()
   }
 }
 
+
+// void test_parseFile()
+// {
+//   httpconn* h=new httpconn();
+//   h->m_request->content="---------\r\nContent-Disposition:fromdata;filename=\"test\"\r\n\r\nhello world";
+//   h->ParseUpLoadFile();
+//   cout<<h->fileName<<endl;
+//   cout<<h->file_content<<endl;
+// }
 int main()
 {
   //test_parse_line();
@@ -182,6 +191,8 @@ int main()
   //test_lst_timer();
   // test_tcp_server();
  // threadPool_test();
+  //test_parseFile();
+
   test_webservr();
   //test();
   return 0;
