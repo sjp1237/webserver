@@ -33,7 +33,7 @@ static  std::string GetEtag(std::string filename){
   }
 
 
-void  httpconn::AnalyFile(){
+ void  httpconn::AnalyFile(){       
         std::string path=m_request->m_path;
         m_request->m_path="wwwroot";
         m_request->m_path+=path;
@@ -345,12 +345,12 @@ bool httpconn::AnalyUri(){
        m_request->m_path=uri;      
     }
 
-
     int pos=m_request->m_path.rfind("/");
     string s=m_request->m_path.substr(pos+1);
    // cout<<"s："<<s<<endl;
     if(s=="download"){
-      //去掉download
+      //111.txt/download
+      //去掉download,在文件名之前添加/backdir/前缀
       m_request->m_path=m_request->m_path.substr(0,pos);
       //设置下载的文件名
       pos=m_request->m_path.rfind("/");
@@ -399,7 +399,9 @@ void httpconn::ShowList()
       std::string path=arry[i].back_path;    
       sjp::FileUtil fu(path);    
       std::string atimestr=mtimeToString(arry[i].modify_time);    
-      ss<<"<tr><td><a href=\"/download/"<<fu.GetFilename()<<"\">"<<fu.GetFilename()<<"</a></td>";    
+    //  ss<<"<tr><td><a href=\"/download/"<<fu.GetFilename()<<"\">"<<fu.GetFilename()<<"</a></td>";    
+      ss<<"<tr><td><a href=\"/"<<fu.GetFilename()<<"/download"<<"\">"<<fu.GetFilename()<<"</a></td>";    
+
       ss<<"<td align=\"right\">"<<atimestr<<"    </td>";    
       ss<<"<td align=\"right\">"<<arry[i].file_size/1024<<"k"<<"</td></tr>";                                                                                                          
     }    
@@ -442,6 +444,24 @@ void httpconn::UpLoad()
     // ListShow(req,rep);
 }
 
+//给下载的文件设置相对路径，并查询下载文件的大小
+void httpconn::ParseDownFile()
+{
+     //路径设置为的相对路径
+  m_request->m_path=Config::GetInstant()->GetBackDir();
+    m_request->m_path+=fileName;
+   //解析下载文件的大小
+   sjp::FileUtil fu(m_request->m_path);
+   m_response->content_size=fu.GetFileSize();
+   fd=open(m_request->m_path.c_str(),O_RDONLY);
+  if(fd<0){
+    cout<<"文件打开失败"<<endl;
+    //打开失败
+    //cout<<"m_request->m_path: "<<m_request->m_path<<endl;
+   // cout<<"fd == -1"<<endl;
+  }
+
+}
 int httpconn::do_request()
 {
   //将url中的路径和参数给分开来
@@ -461,12 +481,19 @@ int httpconn::do_request()
   if(showList){
     return 0;//返回下载网页
   }
+
+  if(downFile)
+  {
+    ParseDownFile();
+    return 0;
+  }
   AnalyFile();
   if(cgi)
   {
     //处理cgi文件
      CgiHandle();
-  }else if(IsSendPage){
+  }
+  else if(IsSendPage){
     //处理发送静态网页
     OpenPage();
   }
@@ -489,8 +516,7 @@ void httpconn::BuildReponseLine(){
        //构建Content-Type: 
        //std::string content_type;
        if(downFile)
-        {
-         
+        {       
           cout<<"download"<<endl;
           m_response->response_body+="Content-Type: application/octet-stream";   
           m_response->response_body+=BLANK;
@@ -529,7 +555,6 @@ void httpconn::BuildReponseLine(){
         }
         connection+=BLANK;
         m_response->response_body+=connection;
-        m_response->response_body+=BLANK;
         m_response->response_body+=BLANK;
         cout<<m_response->response_body<<endl;
     }
@@ -675,6 +700,8 @@ void httpconn::SendResponseHeader()
 void httpconn::SendResponseContent()
 {
   int content_size=m_response->content_size; 
+  cout<<"content_size:"<<content_size<<endl;
+
   //std::cout<<"content_size: "<<content_size<<std::endl;
   off_t start=0;
   while(true){
@@ -704,7 +731,7 @@ bool httpconn::Write()
  SendResponseHeader();
  cout<<"发送响应报头成功"<<endl;
 
-  if(IsSendPage)
+  if(IsSendPage||downFile)
     {
         //cout<<fd<<endl;
         //fd == -1
@@ -765,7 +792,7 @@ void httpconn::init()
   m_check_state=CHECK_STATE_REQUESTLINE;
   m_start_content=0;
   m_linger=false;
-  file_size=0;
+//  file_size=0;
   IsSendPage=false;
   cgi=false;
   showList=false;

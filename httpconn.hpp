@@ -178,10 +178,16 @@ private:
     //解析http请求
     //构建响应
     HTTP_CODE process_write();
+    HTTP_CODE parse_request_line(std::string text); 
     //解析请求报头
     HTTP_CODE parse_request_header(std::string text);
     //解析请求正文
     HTTP_CODE parse_request_content();
+    bool AnalyUri();//将url中的路径和参数给分离开来
+    void  AnalyFile();//分析文件
+    void ParseDownFile();//解析下载文件
+
+    HTTP_CODE process_read();
     void ParseUpLoadFile();
     void UpLoad();
     //解析文件
@@ -192,11 +198,7 @@ private:
     //未测试
     bool CgiHandle();
   public:
-    //测试成功的接口
-    bool AnalyUri();//将url中的路径和参数给分离开来
-    void  AnalyFile();//分析文件
-    HTTP_CODE parse_request_line(std::string text); 
-    HTTP_CODE process_read();
+
   private:
     Response* m_response;
     Request* m_request;
@@ -217,7 +219,6 @@ private:
     size_t m_start_content;
     int m_socket;
     bool m_linger=false;
-    int file_size=0;//发送静态网页的大小
    // int fd;//发送静态网页的文件描述符
     bool IsSendPage=false;
     bool cgi=false;
