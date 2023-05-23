@@ -184,6 +184,7 @@ httpconn::HTTP_CODE httpconn::process_read(){
       case httpconn::CHECK_STATE_REQUESTLINE:
       {
         //解析请求行
+       // cout<<"请求行:"<<text<<endl;
         ret=parse_request_line(text);
         if(BAD_REQUEST==ret){
           return BAD_REQUEST;
@@ -447,10 +448,39 @@ void httpconn::UpLoad()
 //给下载的文件设置相对路径，并查询下载文件的大小
 void httpconn::ParseDownFile()
 {
-     //路径设置为的相对路径
+     //路径设置为的相对路径 
   m_request->m_path=Config::GetInstant()->GetBackDir();
-    m_request->m_path+=fileName;
-   //解析下载文件的大小
+  m_request->m_path+=fileName;
+
+  //通过back路径获取文件信息
+  FileInfo fileinfo;
+  FileInfoManger::GetInstant()->GetoneByURL(m_request->m_path,fileinfo);
+
+   //判断文件是否被压缩
+  if(fileinfo.pack_sign==true)
+  {
+    //解压缩
+    sjp::FileUtil fu(fileinfo.pack_path);
+    fu.UnpackFile(fileinfo.back_path);
+    fileinfo.pack_sign=false;
+    sjp::FileInfoManger::GetInstant()->Insert(fileinfo);
+    fu.Remove();
+  }
+
+//判断是否为断点续传
+  //  bool flag=false;
+  // if(req.has_header("If-Range")){
+  //   //断点续传
+  //   std::string oldetag=req.get_header_value("If-Range"); 
+  //   if(oldetag==GetEtag(fileinfo.back_path)){
+  //       //需要断点续传
+  //       cout<<"oldetag: "<<oldetag<<endl;
+  //       cout<<"etag: "<<GetEtag(fileinfo.back_path)<<endl;                                                                                                                           
+  //       flag=true;
+  //   }
+  // }
+  
+ // m_response->content_size=
    sjp::FileUtil fu(m_request->m_path);
    m_response->content_size=fu.GetFileSize();
    fd=open(m_request->m_path.c_str(),O_RDONLY);
@@ -461,7 +491,26 @@ void httpconn::ParseDownFile()
    // cout<<"fd == -1"<<endl;
   }
 
+  if(!m_request->old_etag.empty())
+  {
+    if(m_request->old_etag==GetEtag(m_request->m_path))
+    {
+        //将断点续传的标志设置为true
+        break_point_resume=true;
+        //解析Range请求字段：
+        //假设每次断点续传都是从文件 开始到文件结束请求整个文件结束
+        //Range: bytes=100-
+        //将文件的起始位置给 解析出来
+        int pos=m_request->range.find("byte=");
+        int pos1=m_request->range.find("-");
+        string start_str=m_request->range.substr(pos+1,pos1-pos-1);
+        int start_int=atoi(start_str.c_str());//转换为整数
+        //start_int是请求文件的起始位置
+        
+    }
+  }
 }
+
 int httpconn::do_request()
 {
   //将url中的路径和参数给分开来
@@ -518,6 +567,7 @@ void httpconn::BuildReponseLine(){
        if(downFile)
         {       
           cout<<"download"<<endl;
+          cout<<"filename: "<<fileName<<endl;
           m_response->response_body+="Content-Type: application/octet-stream";   
           m_response->response_body+=BLANK;
           m_response->response_body+="Content-Disposition: attachment; filename=";
@@ -658,9 +708,23 @@ httpconn::HTTP_CODE  httpconn::parse_request_line(std::string text){
     }
 
     if(text.substr(0,pos)=="Content-Type"){
-      m_request->content_type=text.substr(pos+2);
-      
+      m_request->content_type=text.substr(pos+2);  
+       return NO_REQUEST;
     }
+
+    if(text.substr(0,pos)=="If-Range")
+    {
+      m_request->old_etag=text.substr(pos+2); 
+       return NO_REQUEST;
+    }
+
+    
+    if(text.substr(0,pos)=="Range")
+    {
+      m_request->range=text.substr(pos+2); 
+       return NO_REQUEST;
+    }
+
     return NO_REQUEST;
 }
 
@@ -797,6 +861,7 @@ void httpconn::init()
   cgi=false;
   showList=false;
   downFile=false;
+  break_point_resume=false;
   write_buffer.clear();
   read_buffer.clear();
 }

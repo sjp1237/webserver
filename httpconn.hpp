@@ -56,6 +56,7 @@ static std::unordered_map<std::string,std::string> code_desc{
       m_host.clear();
       m_content_len=0;
       content.clear();
+      old_etag.clear();
     //  request_header.clear();
     // header_map.clear();
 
@@ -72,6 +73,9 @@ static std::unordered_map<std::string,std::string> code_desc{
       int m_content_pos; //读取请求正文的下标
       std::string content; //请求正文
       std::string content_type;
+      string old_etag; //旧的old_etag;
+      string range;//表示请求资源从哪里开始下载
+
      // std::vector<std::string> request_header;
       //存储响应报头
     //  std::unordered_map<std::string,std::string> header_map;              
@@ -185,9 +189,9 @@ private:
     HTTP_CODE parse_request_content();
     bool AnalyUri();//将url中的路径和参数给分离开来
     void  AnalyFile();//分析文件
-    void ParseDownFile();//解析下载文件
 
     HTTP_CODE process_read();
+    void ParseDownFile();//解析下载文件
     void ParseUpLoadFile();
     void UpLoad();
     //解析文件
@@ -230,5 +234,6 @@ private:
     string file_content;//上次的文件文本内容
     bool showList=false;//展示下载页面
     bool m_upload=false;
+    bool break_point_resume=false;
     Option m_op;
 };
